@@ -20,35 +20,59 @@ from axon.utilities.utilities import Base
 # ------------------------------------------------------------------------------
 
 class DG(Base):
-	def __init__(self, name, owner=None, **options):
+	def __init__(self, navigation_map, name=None, owner=None, **options):
 		super(DG, self).__init__(**options)
 		self._class = 'DG'
 		self._name = name
 		self._owner = owner
+		self._nav = navigation_map
 	# --------------------------------------------------------------------------
 	
 	def get_class(self):
 		return self._class
-	
+
 	def get_name(self):
 		return self._name
+	
+	@property
+	def nav(self):
+		return self._nav
 
-	def get_owner(self):
-		return self._owner
+	def nav_up(self):
+		return self._nav['owner']
 
-	def get_owner_node(self):
-		return self._ownerNode
-		
-	def get_owner_by_class(self, class_name):
-		def _get_owner_by_class(node):
-			owner = node.get_owner()
-			if node.get_class() != class_name:
-				_get_owner_node(owner)
-			elif node.get_class() == class_name:
-				return owner
-			else:
-				raise NotFound('Owner node not found')
-		return _get_owner_by_class(self)
+	def nav_down(self):
+		return self._nav['children']
+
+	def nav_to(self, destination):
+		return self._nav[destination]
+
+	def nav_up_until(self, condition):
+		def _nav_up_until(node):
+			owner = node.owner
+			try:
+				if condition(owner):
+					return owner
+				else:
+					_nav_up_until(owner)
+			except:
+				raise NotFound('Owner not found')
+		return _nav_up_until(self)
+
+	def nav_down_until(self, condition):
+		def _nav_down_until(node):
+			children = node.nav_down()
+			for child in children:
+				if condition(child):
+					return child
+				else:
+					try:
+						_nav_down_until(child)
+					except:
+						pass
+			raise NotFound('Child not found')
+		return _nav_down_until(self)
+
 # ------------------------------------------------------------------------------
 
 def main():
