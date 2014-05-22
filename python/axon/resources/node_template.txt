@@ -1,0 +1,30 @@
+#! /usr/bin/env python
+
+# Alex Braun 11.13.2013
+# >> INSERT LICENSE HERE <<
+
+'''
+.. module:: <node_base_name>Node
+	:date: 11.13.2013
+	:platform: Unix
+	:synopsis: <node_base_name> node
+	
+.. moduleauthor:: Alex Braun <ABraunCCS@gmail.com>
+'''
+# ------------------------------------------------------------------------------
+
+from axon.dependencygraph.nodes.components.node import Node
+<import_strings>
+# ------------------------------------------------------------------------------
+
+class <node_base_name>Node(Node):
+	def __init__(self, name, owner=None, **options):
+		super(<node_base_name>Node, self).__init__(name, owner=owner, **options)
+		self._class = '<node_base_name>Node'
+
+		self.register_package('<package_name>', package_class=<package_name>)
+		self.add_in_port('in', '<package_name>')
+		self.add_out_port('out', '<package_name>')
+
+		self.auto_add_instruments(package_name='<package_name>')
+		self.get_executor().register_instrument('<method_name>')
