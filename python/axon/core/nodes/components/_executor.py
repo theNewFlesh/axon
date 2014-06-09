@@ -20,17 +20,14 @@ from axon.dependencygraph.nodes.components.dg import DG
 # ------------------------------------------------------------------------------
 
 class Executor(DG):
-	def __init__(self, name, owner, **options):
-		super(Executor, self).__init__(name, owner, **options)
-		self._name = name
-		self._owner = owner
-		self._owner_node = owner
+	def __init__(self, spec):
+		super(Executor, self).__init__(spec)
+		self._name = spec['name']
 		self._registered_instruments = OrderedDict()
 		self._callbacks = OrderedDict()
 	# --------------------------------------------------------------------------
 	
-	def add_callback(self, name, callback='~!callback'):
-		_check_kwargs(callback)
+	def add_callback(self, name, callback):
 		self._callbacks[name] = callback
 
 	def remove_callback(self, name):

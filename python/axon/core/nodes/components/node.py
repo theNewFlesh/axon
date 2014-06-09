@@ -38,8 +38,8 @@ class Node(DG):
 		self._target_package = None
 		self._generator_package = None
 		self._instruments = {}
-		self._executor = Executor(name + 'Executor', owner=self)
-		self._informer = Informer(name + 'Informer', owner=self)
+		self._executor = Executor(name + '_executor', owner=self)
+		self._informer = Informer(name + '_informer', owner=self)
 		self._informer.create_log('executor')
 		self._informer.create_log('ports')
 		self._informer.create_log('instruments')
