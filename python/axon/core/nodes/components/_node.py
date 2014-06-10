@@ -92,7 +92,7 @@ class Node(DG):
 	def spec(self):
 		return self._spec
 
-	@propoerty
+	@property
 	def map(self):
 		return self._map
 
