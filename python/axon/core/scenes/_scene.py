@@ -31,8 +31,7 @@ class Scene(DG):
 		self._source_library = source_library
 		self._nodes = OrderedDict()
 		
-	def generate_node_name(self, spec):
-		name = spec['name']
+	def create_node_name(self, name):
 		node_re = re.compile(name)
 		num = 1
 		for key in self._nodes:
@@ -42,17 +41,18 @@ class Scene(DG):
 		return name + str(num)
 
 	def create_node(self, spec):
-		spec = copy(spec)
-		spec['instance'] = self.create_instance(spec)
-		spec['name'] = self.generate_node_name(spec)
-		
+		spec['name'] = self.create_node_name(spec['name'])
+
 		# INFORMER HOOK
 		message = 'create_node', spec['name']
 		self.get_informer().log('node', message=message)
 		# ----------------------------------------------------------------------
 
+		for pspec in spec['packages']:
+			pspec['init'] = self.get_class(pspec['class'])
+
 		node = Node(spec)
-		self._nodes[node['name']] = node
+		self._nodes[node.name] = node
 		return node
 
 	def destroy_node(self, node_name):

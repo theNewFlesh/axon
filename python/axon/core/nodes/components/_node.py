@@ -27,9 +27,8 @@ class Node(DG):
 	def __init__(self, spec):
 		super(Node, self).__init__(spec)
 		self._class = 'Node'
-		self._name = spec['name']
-		self._spec = None
-		self._map = None
+		self._spec = spec
+		self._map = {}
 		self.build()
 		self._map['executor'] = self.create_executor(self.spec['executor'])
 		self._map['informer'] = self.create_executor(self.spec['informer'])
@@ -43,46 +42,52 @@ class Node(DG):
 	
 	def build(self):
 		spec = self._spec
-		self._type = spec['type']
-		for pspec in spec['packages']:
-			package = self.create_package(pspec)
-			self._map['packages'][package['name']] = package
+		self._map['name'] = spec['name']
+		self._map['type'] = spec['type']
 
-		for ispec in package['instruments']:
+		for _type in spec['packages']:
+			for pspec in _type:
+				package = self.create_package(pspec)
+				self._map['packages'][_type][package.name] = package
+
+		self._map['instruments'] = OrderedDict()
+
+		for key in sorted(spec['instruments'].keys()):
+			ispec = spec['instruments'][key]
 			instrument = self.create_instrument(ispec)
-			self._map['instruments'][instrument['name']] = insrument
+			self._map['instruments'][instrument.name] = instrument
 
 		for inspec in spec['ports']['in_ports']:
 			in_port = self.create_port(inspec)
-			self._map['ports']['in_ports']['name']] = in_port
+			self._map['ports']['in_ports'][in_port.name] = in_port
 
 		for outspec in spec['ports']['out_ports']:
 			out_port = self.create_port(outspec)
-			self._map['ports']['out_ports']['name']] = out_port
+			self._map['ports']['out_ports'][out_port.name] = out_port
 
 	def create_executor(self, spec):
-		executor = Executor(spec)
+		executor = Executor(spec, self)
 		return executor
 
 	def create_informer(self, spec):
-		informer = Informer(spec)
+		informer = Informer(spec, self)
 		return informer
 
-	def create_package(self, spec):
+	def create_package(self):
 		spec['init'] = spec['class'](*spec['init_args'], **spec['init_kwargs'])
 		package = Package(spec)
 		return package
 
 	def create_instrument(self, spec):
-		instrument = Instrument(spec)
+		instrument = Instrument(spec, self)
 		return instrument
 
 	def create_port(self, spec):
 		if spec['type'] == 'in':
-			port = InPort(spec)
+			port = InPort(spec, self)
 			return port
 		elif spec['type'] == 'out':
-			port = OutPort(spec)
+			port = OutPort(spec, self)
 			return port
 		else:
 			raise TypeError('Invalid port type')
@@ -97,6 +102,10 @@ class Node(DG):
 		return self._map
 
 	@property
+	def name(self):
+		return self._map['name']
+
+	@property
 	def executor(self):
 		return self._map['executor']
 
@@ -109,6 +118,13 @@ class Node(DG):
 		return self._map['ports']
 
 	@property
+	def all_ports(self):
+		output = {}
+		for _type in self._map['ports']:
+			for port in _type:
+				output[port] = _type[port]
+
+	@property
 	def in_ports(self):
 		return self._map['ports']['in_ports']
 
@@ -119,6 +135,14 @@ class Node(DG):
 	@property
 	def packages(self):
 		return self._map['packages']
+
+	@property
+	def all_packages(self):
+		output = {}
+		for _type in self._map['packages']:
+			for package in _type:
+				output[package] = _type[package]
+		return output
 
 	@property
 	def standard_packages(self):

@@ -170,6 +170,13 @@ class Node(DG):
 	def list_instruments(self):
 		for key, val in self._instruments.iteritems():
 			print key, ':', val
+	# --------------------------------------------------------------------------
+	
+	def build(self, spec):
+		self.set_instance(spec['instance'])
+		self.add_data(spec['data'])
+		self.
+
 # ------------------------------------------------------------------------------
 
 def main():
