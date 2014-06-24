@@ -16,167 +16,153 @@
 from collections import OrderedDict
 
 from axon.utilities.errors import *
-from axon.dependency.graph.nodes.components.dg import DG
-from axon.dependency.graph.nodes.components.executor import Executor
-from axon.dependency.graph.nodes.components.port import *
-from axon.dependency.graph.nodes.components.instrument import *
+from axon.core.dg import Component
+from axon.core.nodes.components.executor import Executor
+from axon.core.nodes.components.port import *
+from axon.core.nodes.components.instrument import *
 from axon.utilities.informer import Informer
 # ------------------------------------------------------------------------------
 
 class Node(DG):
-	def __init__(self, name, owner=None, **options):
-		super(Node, self).__init__(name, owner=owner, **options)
-		self._class = 'Node'
-		self._name = name
-		self._owner = owner
-		self._owner_node = self
-		self._in_ports = {}
-		self._out_ports = {}
-		self._packages = {}
-		self._package_library = {}
-		self._source_package = None
-		self._target_package = None
-		self._generator_package = None
-		self._instruments = {}
-		self._executor = Executor(name + '_executor', owner=self)
-		self._informer = Informer(name + '_informer', owner=self)
-		self._informer.create_log('executor')
-		self._informer.create_log('ports')
-		self._informer.create_log('instruments')
-		self._informer.activate_log('executor')
-		self._informer.activate_log('ports')
-		self._informer.activate_log('instruments')
+	def __init__(self, spec):
+		super(Node, self).__init__(spec)
+		self._cls = 'Node'
+		self._map['executor'] = self.create_executor(self.spec['executor'])
+		self._map['informer'] = self.create_informer(self.spec['informer'])
 	# --------------------------------------------------------------------------
 	
-	def add_in_port(self, name, package_name='~!package_name'):
-		_check_kwargs(package_name)
-		in_port = InPort(name, owner=self, package_name=package_name)
-		self._in_ports[name] = in_port
+	@property
+	def null(self):
+		return self._map['null']
 
-	def get_in_port(self, name):
-		return self._in_ports[name]
+	@property
+	def executor(self):
+		return self._map['executor']
 
-	def get_in_ports(self):
-		return self._in_ports.values()
+	@property
+	def informer(self):
+		return self._map['informer']
 
-	def list_in_ports(self):
-		for key, val in self._in_ports.iteritems():
-			print key, ':', val
+	@property
+	def ports(self):
+		return self._map['ports']
 
-	def add_out_port(self, name, package_name='~!package_name'):
-		_check_kwargs(package_name)
-		out_port = OutPort(name, self, package_name)
-		self._out_ports[name] = out_port
+	@property
+	def all_ports(self):
+		output = {}
+		for _type in self._map['ports']:
+			for port in _type:
+				output[port] = _type[port]
 
-	def get_out_port(self, name):
-		return self._out_ports[name]
+	@property
+	def in_ports(self):
+		return self._map['ports']['in_ports']
 
-	def get_out_ports(self):
-		return self._out_ports.values()
+	@property
+	def out_ports(self):
+		ports = self._map['ports']['out_ports']
 
-	def list_out_ports(self):
-		for key, val in self._out_ports.iteritems():
-			print key, ':', val
+	@property
+	def packages(self):
+		return self._map['packages']
+
+	@property
+	def all_packages(self):
+		output = {}
+		for _type in self._map['packages']:
+			for package in _type:
+				output[package] = _type[package]
+		return output
+
+	@property
+	def standard_packages(self):
+		return self._map['packages']['standard']
+
+	@property
+	def source_package(self):
+		return self._map['packages']['source']
+
+	@property
+	def generator_package(self):
+		return self._map['packages']['generator']
+
+	@property
+	def target_package(self):
+		return self._map['packages']['target']
+
+	@property
+	def instruments(self):
+		return self._map['instruments']
 	# --------------------------------------------------------------------------
 	
-	def get_package_from_library(self, name):
-		return self._package_library[name]
+	def build(self):
+		spec = self._spec
+		self._map['name'] = spec['name']
+		self._map['type'] = spec['type']
+		self._map['null'] = spec['null']
 
-	def get_packages_from_library(self):
-		return self._package_library.values()
+		for _type in spec['packages']:
+			for pspec in _type:
+				package = self.create_package(pspec)
+				self._map['packages'][_type][package.name] = package
 
-	def list_packages_from_library(self):
-		for key, val in self._package_library.iteritems():
-			print key, ':', val
+		self._map['instruments'] = OrderedDict()
+
+		for key in sorted(spec['instruments'].keys()):
+			ispec = spec['instruments'][key]
+			instrument = self.create_instrument(ispec)
+			self._map['instruments'][instrument.name] = instrument
+
+		for inspec in spec['ports']['in_ports']:
+			in_port = self.create_port(inspec)
+			self._map['ports']['in_ports'][in_port.name] = in_port
+
+		for outspec in spec['ports']['out_ports']:
+			out_port = self.create_port(outspec)
+			self._map['ports']['out_ports'][out_port.name] = out_port
 	# --------------------------------------------------------------------------
 	
-	def initialize_package(self, name):
-		package_class = self.get_package_from_library(name)
-		self._packages[name] = package_class(name, owner=self)
-	
-	def register_package(self, name, package_class='~!package_class'):
-		_check_kwargs(package_class)
-		self._package_library[name] = package_class
-		self.initialize_package(name)
+	def create_executor(self, spec):
+		executor = Executor(spec, self)
+		return executor
 
-	def get_package(self, name):
-		return self._packages[name]
+	def create_informer(self, spec):
+		informer = Informer(spec, self)
+		return informer
 
-	def get_packages(self):
-		return self._packages.values()                                                                         
+	def create_package(self):
+		spec['init'] = spec['class'](*spec['init_args'], **spec['init_kwargs'])
+		package = Package(spec)
+		return package
 
-	def list_packages(self):
-		for key, val in self._packages.iteritems():
-			print key, ':', val
+	def create_instrument(self, spec):
+		instrument = Instrument(spec, self)
+		return instrument
 
-	def set_package(self, name, package='~!package'):
-		_check_kwargs(package)
-		self._packages[name] = package
-	# --------------------------------------------------------------------------
-	
-	def mark_source_package(self, name):
-		self._source_package = name
-
-	def get_source_package(self):
-		if self._source_package:
-			return self._packages[self._source_package]
+	def create_port(self, spec):
+		if spec['type'] == 'in':
+			port = InPort(spec, self)
+			return port
+		elif spec['type'] == 'out':
+			port = OutPort(spec, self)
+			return port
 		else:
-			NotFound('Source Package not set')
-
-	def mark_target_package(self, name):
-		self._target_package = name
-
-	def get_target_package(self):
-		if self._target_package:
-			return self._packages[self._target_package]
-		else:
-			NotFound('Target Package not set')
-
-	def mark_generator_package(self, name):
-		self._generator_package = name
-
-	def get_generator_package(self):
-		if self._generator_package:
-			return self._packages[self._generator_package]
-		else:
-			NotFound('Generator Package not set')
+			raise TypeError('Invalid port type')
 	# --------------------------------------------------------------------------
-	
-	def get_executor(self):
-		return self._executor
 
-	def get_informer(self):
-		return self._informer
-	# --------------------------------------------------------------------------
-	
-	def add_instrument(self, name, package_name='~!package_name', method_name='~!method_name'):
-		_check_kwargs(package_name, method_name)
-		self._instruments[name] = Instrument(name, owner=self, package_name=package_name, method_name=method_name)
+	def filter_by_name(self, spec, name):
+		output = {}
+		for key, val in spec.iteritems():
+			if val.name == name:
+				output[key] = val
+		return output
 
-	def auto_add_instruments(self, package_name='~!package_name'):
-		_check_kwargs(package_name)
-		package = self.get_package(package_name)
-		for spec in package.get_method_specs():
-			self.add_instrument(spec['name'], package_name, spec['name'])
-			instrument = self.get_instrument(spec['name'])
-			instrument.auto_add_interfaces()
-
-	def get_instrument(self, name):
-		return self._instruments[name]
-
-	def get_instruments(self):
-		return self._instruments.values()
-
-	def list_instruments(self):
-		for key, val in self._instruments.iteritems():
-			print key, ':', val
-	# --------------------------------------------------------------------------
-	
-	def build(self, spec):
-		self.set_instance(spec['instance'])
-		self.add_data(spec['data'])
-		self.
-
+	def filter_by_type(self, spec, itype):
+		output = {}
+		for key, val in spec.iteritems():
+			if val.type == itype:
+				output[key] = val
+		return output
 # ------------------------------------------------------------------------------
 
 def main():

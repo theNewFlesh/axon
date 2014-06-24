@@ -19,118 +19,59 @@ from axon.utilities.errors import *
 from axon.dependency.graph.nodes.components.dg import DG
 # ------------------------------------------------------------------------------
 
-class Package(DG):
-    def __init__(self, name, owner=None, **options):
-        super(Package, self).__init__(name, owner=owner, **options)
-        self._class = 'Package'
-        self._name = name
-        self._owner = owner
-        self._owner_node = owner
-        self._instance = None
-        self._method_specs = OrderedDict()
-        self._data = {}
+class Package(Component):
+    def __init__(self, spec, node):
+        super(Package, self).__init__(spec, node)
+        self._cls = 'Package'
     # --------------------------------------------------------------------------
-    
-    def get_instance(self):
-        return self._instance
 
+    @property
+    def class_(self):
+        return self._map['class']
+
+    @property
+    def instance(self):
+        return self._map['instance']
+
+    @property
+    def init_args(self):
+        return self._map['init_args']
+
+    @property
+    def init_kwargs(self):
+        return self._map['init_kwargs']
+
+    @property
+    def methods(self):
+        return self._map['methods']
+    # --------------------------------------------------------------------------
+
+    def build(self):
+        self._map = self._spec
+        self._instance = self.create_instance()
+
+        for mspec in self._spec['methods']:
+            method = self.create_method(mspec)
+            self._map['methods'][method.name] = method
+
+        for dspec in self._spec['data']:
+            datum = self.create_datum(dspec)
+            self._map['data'][dspec] = datum
+    # --------------------------------------------------------------------------
+        
     def set_instance(self, instance):
-        self._instance = instance
-    # --------------------------------------------------------------------------
-    
-    def add_datum(self, name):
-        def func(temp):
-            return eval('temp._instance.' + name)
-        self._data[name] = func
+        self._map['instance'] = instance
 
-    def add_data(self, names):
-        for name in names:
-            self.add_datum(name)
+    def create_instance(self):
+        return self.class_(*self.init_args, **self.init_kwargs)
 
-    def get_datum(self, name):
-        return self._data[name](self)
-        
-    def get_data(self):
-        values = []
-        for datum in self._data.values():
-            values.append(datum(self))
-        return values
+    def create_method(self, spec):
+        return getattr(self.instance, spec)
 
-    def list_data(self):
-        values = {}
-        for key in self._data.keys():
-            func = self._data[key]
-            values[key] = func(self)
-        return values
-    # --------------------------------------------------------------------------
-    
-    def add_method_spec(self, method_spec):
-        method = method_spec[0]
-        _args = method_spec[1]
-        _arg_defaults = method_spec[3]
-        _arg_widgets = method_spec[5]
-        _kwargs = method_spec[2]
-        _kwarg_defaults = method_spec[4]
-        _kwarg_widgets = method_spec[6]
-
-        args = namedtuple('args', _args)
-        args = args(*_arg_defaults)
-        arg_widgets = namedtuple('arg_widgets', _args)
-        arg_widgets = arg_widgets(*_arg_widgets)
-        kwargs = namedtuple('kwargs', _kwargs)
-        kwargs = kwargs(*_kwarg_defaults) 
-        kwarg_widgets = namedtuple('kwarg_widgets', _kwargs)
-        kwarg_widgets = kwarg_widgets(*_kwarg_widgets)
-        
-        spec = OrderedDict()
-        spec['name'] = method
-        spec['args'] = args
-        spec['arg_widgets'] = arg_widgets
-        spec['kwargs'] = kwargs
-        spec['kwarg_widgets'] = kwarg_widgets
-        self._method_specs[method] = spec
-
-    def add_method_specs(self, method_spec_index):
-        for method_spec in method_spec_index:
-            self.add_method_spec(method_spec)
-
-    def get_method_spec(self, name):
-        return self._method_specs[name]
-
-    def get_method_specs(self):
-        return self._method_specs.values()
-
-    def list_method_spec(self, name):
-        for key, val in self._method_specs[name].iteritems():
-            print key, ':', val
-
-    def list_method_specs(self):
-        for key, val in self._method_specs.iteritems():
-            print key
-            print self.list_method_spec(key)
-    # --------------------------------------------------------------------------
-    
-    def add_method(self, name):
-        spec = [name, [], [], [], [], [], [] ]
-        self.add_method_spec(spec)
-
-    def get_method(self, name):
-        return getattr(self.get_instance(), name)
-
-    def get_methods(self):
-        for spec in self.get_method_specs():
-            return getattr(self.get_instance(), spec['name'])
-    # --------------------------------------------------------------------------
-    
-    def mark_generator_method(self, name):
-        self._generator = self.get_method(name)
-
-    def get_generator(self):
-        return self._generator
-    # --------------------------------------------------------------------------
-    
-    def build(self, spec):
-            
+    def create_datum(self, spec):
+        def func():
+            return getattr(self.instance, spec)
+        return func
 # ------------------------------------------------------------------------------
 
 def main():

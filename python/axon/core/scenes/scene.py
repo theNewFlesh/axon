@@ -23,16 +23,23 @@ from axon.utilities.informer import Informer
 # ------------------------------------------------------------------------------
 
 class Scene(DG):
-	def __init__(self, name, source_library, owner=None):
-		super(Scene, self).__init__(name, owner=owner)
-		self._class = 'Scene'
-		self._name = name
-		self._owner = owner
+	def __init__(self, spec):
+		super(Scene, self).__init__(spec)
+		self._cls = 'Scene'
 		self._source_library = source_library
 		self._nodes = OrderedDict()
-		
-	def generate_node_name(self, spec):
-		name = spec['name']
+	
+	def build(self):
+		spec = self._spec
+		self._map['name'] = spec['name']
+		self._map['source_library'] = spec['source_library']
+		self._map['nodes'] = spec['nodes']
+
+	@property
+	def source_library(self):
+		return self._map['source_library']
+
+	def create_node_name(self, name):
 		node_re = re.compile(name)
 		num = 1
 		for key in self._nodes:
@@ -42,17 +49,18 @@ class Scene(DG):
 		return name + str(num)
 
 	def create_node(self, spec):
-		spec = copy(spec)
-		spec['instance'] = self.create_instance(spec)
-		spec['name'] = self.generate_node_name(spec)
-		
+		spec['name'] = self.create_node_name(spec['name'])
+
 		# INFORMER HOOK
 		message = 'create_node', spec['name']
-		self.get_informer().log('node', message=message)
+		self.get_informer().log('node', message)
 		# ----------------------------------------------------------------------
 
+		for pspec in spec['packages']:
+			pspec['init'] = self.get_class(pspec['class'])
+
 		node = Node(spec)
-		self._nodes[node['name']] = node
+		self._nodes[node.name] = node
 		return node
 
 	def destroy_node(self, node_name):
@@ -69,7 +77,7 @@ class Scene(DG):
 		# INFORMER HOOK
 		message = ('connect_ports', out_port.get_owner_node().get_name(),
 		out_port.get_name(), in_port.get_owner_node().get_name(), in_port.get_name() )
-		self.get_informer().log('node', message=message)
+		self.get_informer().log('node', message)
 		# ----------------------------------------------------------------------
 		
 		in_port.connect_port(out_port)
@@ -77,7 +85,7 @@ class Scene(DG):
 	def disconnect_ports(self, in_port):
 		# INFORMER HOOK
 		message = 'disconnect_ports', in_port.get_owner_node().get_name(), in_port.get_name()
-		self.get_informer().log('node', message=message)
+		self.get_informer().log('node', message)
 		# ----------------------------------------------------------------------
 
 		in_port.disconnect_port()
