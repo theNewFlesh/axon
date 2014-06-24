@@ -19,22 +19,16 @@ from axon.utilities.errors import *
 from axon.dependencygraph.nodes.components.dg import DG
 # ------------------------------------------------------------------------------
 
-class Executor(DG):
+class Executor(Component):
 	def __init__(self, spec, node):
-		super(Executor, self).__init__(spec)
-		self._name = spec['name']
-		self._node = node
+		super(Executor, self).__init__(spec, node)
+		self._cls = 'DG'
 	# --------------------------------------------------------------------------
 	
-	@property
-	def node(self):
-		return self._node
-	# --------------------------------------------------------------------------
-
 	def propagate_packages(self):
 		# INFORMER HOOK
 		message = 'propagate_packages', self.node.name
-		self.node.informer.log('executor', message=message)
+		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
 		outports = self.node.out_ports
@@ -49,7 +43,7 @@ class Executor(DG):
 	def update_packages(self):
 		# INFORMER HOOK
 		message = 'update_packages', self.node.name
-		self.node.informer.log('executor', message=message)
+		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
 		node = self.node
@@ -62,7 +56,7 @@ class Executor(DG):
 	def initialize_packages(self):
 		# INFORMER HOOK
 		message = 'initialize_packages', self.node.name
-		self.node.informer.log('executor', message=message)
+		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
 		for port in self.node.in_ports:
@@ -72,7 +66,7 @@ class Executor(DG):
 	def generate_packages(self):
 		# INFORMER HOOK
 		message = 'generate_packages', self.node.name
-		self.node.informer.log('executor', message=message)
+		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
 		source = self.node.source_package.get_instance()
@@ -95,7 +89,7 @@ class Executor(DG):
 	def update_node(self):
 		# INFORMER HOOK
 		message = 'update_node', self.node.name
-		self.node.informer.log('executor', message=message)
+		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
 		if self.get_state_of_in_ports() == 'ready':
@@ -107,7 +101,7 @@ class Executor(DG):
 			for ispec in self.node.instruments(registered_only=True):
 				# INFORMER HOOK
 				message = 'fire', self.node.name, self.name, self._args.values(), self._kwargs.values()
-				self.node.informer.log('instruments', message=message)
+				self.node.informer.log('instruments', message)
 				# ----------------------------------------------------------------------
 
 				method = self.node.get_method method = ispec['method']

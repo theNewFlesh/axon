@@ -19,23 +19,11 @@ from axon.utilities.errors import *
 from axon.dependency.graph.nodes.components.dg import DG
 # ------------------------------------------------------------------------------
 
-class Package(DG):
-    def __init__(self, spec):
-        super(Package, self).__init__()
-        self._class = 'Package'
-        self._spec = spec
-        self._map = None
-        self._name = name
-        self.build()
+class Package(Component):
+    def __init__(self, spec, node):
+        super(Package, self).__init__(spec, node)
+        self._cls = 'Package'
     # --------------------------------------------------------------------------
-    
-    @property
-    def spec(self):
-        return self._spec
-
-    @property
-    def map(self):
-        return self._map
 
     @property
     def class_(self):
@@ -56,9 +44,7 @@ class Package(DG):
     @property
     def methods(self):
         return self._map['methods']
-
-    def set_instance(self, instance):
-        self._map['instance'] = instance
+    # --------------------------------------------------------------------------
 
     def build(self):
         self._map = self._spec
@@ -71,6 +57,10 @@ class Package(DG):
         for dspec in self._spec['data']:
             datum = self.create_datum(dspec)
             self._map['data'][dspec] = datum
+    # --------------------------------------------------------------------------
+        
+    def set_instance(self, instance):
+        self._map['instance'] = instance
 
     def create_instance(self):
         return self.class_(*self.init_args, **self.init_kwargs)

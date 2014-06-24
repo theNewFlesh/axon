@@ -23,14 +23,22 @@ from axon.utilities.informer import Informer
 # ------------------------------------------------------------------------------
 
 class Scene(DG):
-	def __init__(self, name, source_library, owner=None):
-		super(Scene, self).__init__(name, owner=owner)
-		self._class = 'Scene'
-		self._name = name
-		self._owner = owner
+	def __init__(self, spec):
+		super(Scene, self).__init__(spec)
+		self._cls = 'Scene'
 		self._source_library = source_library
 		self._nodes = OrderedDict()
-		
+	
+	def build(self):
+		spec = self._spec
+		self._map['name'] = spec['name']
+		self._map['source_library'] = spec['source_library']
+		self._map['nodes'] = spec['nodes']
+
+	@property
+	def source_library(self):
+		return self._map['source_library']
+
 	def create_node_name(self, name):
 		node_re = re.compile(name)
 		num = 1
@@ -45,7 +53,7 @@ class Scene(DG):
 
 		# INFORMER HOOK
 		message = 'create_node', spec['name']
-		self.get_informer().log('node', message=message)
+		self.get_informer().log('node', message)
 		# ----------------------------------------------------------------------
 
 		for pspec in spec['packages']:
@@ -69,7 +77,7 @@ class Scene(DG):
 		# INFORMER HOOK
 		message = ('connect_ports', out_port.get_owner_node().get_name(),
 		out_port.get_name(), in_port.get_owner_node().get_name(), in_port.get_name() )
-		self.get_informer().log('node', message=message)
+		self.get_informer().log('node', message)
 		# ----------------------------------------------------------------------
 		
 		in_port.connect_port(out_port)
@@ -77,7 +85,7 @@ class Scene(DG):
 	def disconnect_ports(self, in_port):
 		# INFORMER HOOK
 		message = 'disconnect_ports', in_port.get_owner_node().get_name(), in_port.get_name()
-		self.get_informer().log('node', message=message)
+		self.get_informer().log('node', message)
 		# ----------------------------------------------------------------------
 
 		in_port.disconnect_port()

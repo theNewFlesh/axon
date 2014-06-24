@@ -16,6 +16,7 @@
 spec = {
     'name': 'foobar_node',
     'type': 'standard',
+    'null': '<null>',
     'position': {
         'x': 1.0, 'y': 1.0, 'z':1.0, 't':1.0},
     'ports': {
@@ -24,75 +25,76 @@ spec = {
                 'name': 'in',
                 'type': 'in',
                 'package': 'foobar_package',
-                'connected_ports': [] }},
+                'connected_port': None,
+                'state': 'ready'}},
         'out_ports': {
             'out': {
                 'name': 'out',
                 'type': 'out',
                 'package': 'foobar_package',
-                'connected_ports': [] }}
+                'connected_ports': {}}}
             },
-    'executor': None,
-    'informer': None,
+    'executor': '<executor>',
+    'informer': '<informer>',
     'instruments': {
         1: {
             'bar_instrument': {
             'name': 'bar_instrument',
-            'package': 'foobar',
-            'method': 'bar',
+            'package_name': 'foobar',
+            'method_name': 'bar',
             'args': {
                 1: {
                     'arg1': {
                         'name': 'arg1',
                         'default': [],
                         'value': [5, 6],
-                        'widget': 'spinbox'},
+                        'widget': '<spinbox>'},
                 2: {
                     'arg2': {
                         'name': 'arg2',
                         'default': 1, 
                         'value': 8, 
-                        'widget': 'numberfield'}}}},
+                        'widget': '<numberfield>'}}}},
             'kwargs': {
                 1: {
                     'kwarg1': {
                         'name': 'kwarg1',
                         'default': False,
-                        'value': True,
-                        'widget': 'radiobutton'}}}}},
+                        'value': '<null>',
+                        'widget': '<radiobutton>'}}}}},
         2: {
             'foo_instrument': {
             'name': 'foo_instrument',
-            'package': 'foobar',
-            'method': 'foo',
+            'package_name': 'foobar',
+            'method_name': 'foo',
             'args': {
                 1: {
                     'arg1': {
                         'name': 'arg1',
                         'default': [],
                         'value': [10, 20],
-                        'widget': 'spinbox'}},
+                        'widget': '<spinbox>'}},
                 2: {
                     'arg2': {
                         'name': 'arg2',
-                        'default': 1, 
-                        'value': 2, 
-                        'widget': 'numberfield'}}},
+                        'default': '<null>', 
+                        'value': '<null>', 
+                        'widget': '<numberfield>'}}},
             'kwargs': {
                 1:{
                     'kwarg1': {
                         'name': 'kwarg1',
                         'default': True,
                         'value': False,
-                        'widget': 'radiobutton'}}}}}},
+                        'widget': '<radiobutton>'}}}}}},
     'packages': {
             'standard': {
                 'foobar_package': {
                     'name': 'foobar_package',
                     'type': 'standard',
                     'class': 'Foobar',
-                    'instance': '<<foobar>>',
-                    'init_args': [1, 2, '<<foobar_arg_3>>'],
+                    'instance': '<foobar>',
+                    'init_args': [1, 2, '<foobar_arg_3>'],
                     'init_kwargs': [],
                     'methods': {
                         'bar': {

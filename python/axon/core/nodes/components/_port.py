@@ -17,50 +17,110 @@ import copy
 from collections import OrderedDict
 
 from axon.utilities.errors import *
-from axon.dependency.graph.nodes.components.dg import DG
+from axon.core.dg import DG
 # ------------------------------------------------------------------------------
 
-class BasePort(DG):
-	def __init__(self, spec, node):
-		super(BasePort, self).__init__(spec, node)
-		self._class = 'BasePort'
-		self._node = node
-		self._spec = spec
-		self._map = None
-	# --------------------------------------------------------------------------
-	
-	def get_package_name(self):
-		return self._package_name
-
-	def get_package(self):
-		return self.node.get_package(self.get_package_name())
-# ------------------------------------------------------------------------------
-
-class InPort(BasePort):
+class InPort(Component):
 	def __init__(self, spec, node):
 		super(InPort, self).__init__(spec, node)
-		self._class = 'InPort'
-		self._node = node
-		self._spec = spec
-		self._map = None
-		self._owner = owner
-		self._owner_node = owner
-		self._package_name = package_name
-		self._connected_port = None
-		self._state = 'ready'
+		self._cls = 'InPort'
 	# --------------------------------------------------------------------------
 	
 	@property
-	def spec(self):
-		return self._spec
+	def type(self):
+		return self._map['type']
 
 	@property
-	def map(self):
-		return self._map
+	def package(self):
+		return self._map['package']
 
 	@property
-	def name(self):
-		return self._map['name']
+	def connected_port(self):
+		return self._map['connected_port']
+
+	@property
+	def state(self):
+		self._map['state']
+	# --------------------------------------------------------------------------
+
+	def build(self):
+		spec = self._spec
+		self._map['name'] = spec['name']
+		self._map['type'] = spec['type']
+		self._map['package'] = self.node.all_packages[spec['package']]
+		self._map['connected_port'] = None
+		self._map['state'] = spec['state']
+	# --------------------------------------------------------------------------
+
+	def connect_port(self, port):
+		# INFORMER HOOK
+		message = 'connect_port', self.node.name, port.name
+		self.node.informer.log('ports', message)
+		# ----------------------------------------------------------------------
+
+		# add in port to connected out port's connections dict
+		port._add_connected_port(self)
+		self.connected_port[port.name] = port
+		executor = self.node.executor
+		executor.update_packages()
+		executor.update_node()
+		executor.propagate_packages()
+
+	def disconnect_port(self):
+		# INFORMER HOOK
+		message = 'disconnect_port', self.node.name
+		self.node.informer.log('ports', message)
+		# ----------------------------------------------------------------------
+
+		# remove in port from previously connected out port's connections dict
+		port = self.connected_port
+		port._remove_connected_port(self)
+		self.connected_port = None
+		executor = self.node.executor
+		executor.initialize_packages()
+		executor.update_node()
+		executor.propagate_packages()
+	
+	def retrieve_package(self):
+		# INFORMER HOOK
+		message = 'retrieve_package', self.node.name, self.package.name
+		self.node.informer.log('ports', message)
+		# ----------------------------------------------------------------------
+		
+		connected_node = self.connected_port.node
+		package = connected_node.all_packages[self.package.name]
+		instance = connected_node.all_packages[self.package.name].instance
+		new_package = copy.copy(package)
+		instance = copy.copy(package.instance)
+		new_package.set_instance(instance)
+		return new_package
+		# return package
+	# --------------------------------------------------------------------------
+
+	def set_state(self, state):
+		self._map['state'] = state
+
+	def change_state(self):
+		if self.connected_port == None:
+			self.set_state('ready')
+		elif len(self.node.in_ports) < 2:
+			self.set_state('ready')
+		elif self.state == 'waiting':
+			self.set_state('ready')
+		else:
+			self.set_state('waiting')
+# ------------------------------------------------------------------------------
+
+class OutPort(DG):
+	def __init__(self, spec, node):
+		super(OutPort, self).__init__(spec)
+		self._cls = 'OutPort'
+		self._node = node
+	# --------------------------------------------------------------------------
+		
+	@property
+	def node(self):
+		return self._node
 
 	@property
 	def type(self):
@@ -73,100 +133,24 @@ class InPort(BasePort):
 	@property
 	def connected_ports(self):
 		return self._map['connected_ports']
-
-	def connect_port(self, port):
-		# INFORMER HOOK
-		message = 'connect_port', self.node.get_name(), port.get_name()
-		self.node.get_informer().log('ports', message=message)
-		# ----------------------------------------------------------------------
-
-		# add inPort to connected outPort's connections dict
-		port._add_connected_port(self)
-		self._connected_port = port
-		executor = self.node.executor
-		executor.update_packages()
-		executor.update_node()
-		executor.propagate_packages()
-
-	def disconnect_port(self):
-		# INFORMER HOOK
-		message = 'disconnect_port', self.node.get_name()
-		self.node.get_informer().log('ports', message=message)
-		# ----------------------------------------------------------------------
-
-		# remove inPort from previously connected outport's connections dict
-		port = self._connected_port
-		port._remove_connected_port(self)
-		self._connected_port = None
-		executor = self.node.executor
-		executor.initialize_packages()
-		executor.update_node()
-		executor.propagate_packages()
-
-	def get_connected_port(self):
-		return self._connected_port
-	
-	def retrieve_package(self):
-		# INFORMER HOOK
-		message = 'retrieve_package', self.node.get_name(), self.get_package_name()
-		self.node.get_informer().log('ports', message=message)
-		# ----------------------------------------------------------------------
-		
-		package_name = self.get_package_name()
-		connected_node = self.get_connected_port().node
-		package = connected_node.get_package(package_name)
-		instance = connected_node.get_package(package_name).get_instance()
-		new_package = copy.copy(package)
-		instance = copy.copy(package.get_instance())
-		new_package.set_instance(instance)
-		return new_package
-		# return package
 	# --------------------------------------------------------------------------
 
-	def get_state(self):
-		return self._state
-
-	def change_state(self):
-		if self._connected_port == None:
-			self._state = 'ready'
-		elif len( self.node.get_in_ports() ) < 2:
-			self._state = 'ready'
-		elif self._state == 'waiting':
-			self._state = 'ready'
-		else:
-			self._state = 'waiting'
-# ------------------------------------------------------------------------------
-
-class OutPort(BasePort):
-	def __init__(self, name, owner=None, package_name='~!package_name', **options):
-		super(OutPort, self).__init__(name, owner=owner, package_name=package_name, **options)
-		_check_kwargs(package_name)
-		self._class = 'OutPort'
-		self._name = name
-		self._owner = owner
-		self._owner_node = owner
-		self._package_name = package_name
-		self._connected_ports = {}
+	def build(self):
+		spec = self._spec
+		self._map['name'] = spec['name']
+		self._map['type'] = spec['type']
+		self._map['package'] = self.node.all_packages[spec['package']]
+		self._map['connected_ports'] = {}
 	# --------------------------------------------------------------------------
-	
-	def _add_connected_port(self, port):
-		self._connected_ports[port.get_name()] = port
 
-	def _remove_connected_port(self, port):
-		del self._connected_ports[port.get_name()]
+	def connected_port(self, port):
+		self.connected_ports[port.name] = port
 
-	def get_connected_port(self, name):
-		return self._connected_ports[name]
-
-	def get_connected_ports(self):
-		return self._connected_ports.values()
-
-	def list_connected_ports(self):
-		for key, val in self._connected_ports.iteritems():
-			print key, ':', val
+	def disconnect_port(self, port):
+		del self.connected_ports[port.name]
 
 	def send_package(self):
-		for port in self.get_connected_ports():
+		for key, port in self.connected_ports.iteritems():
 			port.retrieve_package()
 # ------------------------------------------------------------------------------
 
@@ -179,7 +163,7 @@ def main():
 	help(__main__)
 # ------------------------------------------------------------------------------
 
-__all__ = ['BasePort', 'InPort', 'OutPort']
+__all__ = ['InPort', 'OutPort']
 
 if __name__ == '__main__':
 	main()

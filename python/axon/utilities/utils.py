@@ -21,11 +21,12 @@ class Base(object):
 	Dummy class for argument passing
 	'''
 	
-	def __init__(self, **options):
-		self._class = 'Base'
+	def __init__(self):
+		self._cls = 'Base'
 
-	def get_class(self):
-		return self._class
+	@property
+	def cls(self):
+		return self._cls
 
 	def _print_public(self):
 		non_public_re = re.compile('^_')

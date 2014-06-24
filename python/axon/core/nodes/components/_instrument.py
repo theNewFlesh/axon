@@ -16,29 +16,14 @@
 from collections import *
 
 from axon.utilities.errors import *
-from axon.dependency.graph.nodes.components.dg import DG
+from axon.core.dg import Component
 # ------------------------------------------------------------------------------
 
-class Instrument(DG):
+class Instrument(Component):
 	def __init__(self, spec, node):
-		super(Instrument, self).__init__(node)
-		self._class = 'Instrument'
-		self._node = node
-		self._spec = spec
-		self._map = None
+		super(Instrument, self).__init__(spec, node)
+		self._cls = 'Instrument'
 	# --------------------------------------------------------------------------
-
-	@property
-	def spec(self):
-		return self._spec
-
-	@property
-	def map(self):
-		return self._map
-
-	@property
-	def name(self):
-		return self._map['name']
 
 	@property
 	def package_name(self):
@@ -50,9 +35,9 @@ class Instrument(DG):
 
 	@property
 	def args(self):
-		output = []
+		output = []  
 		for aspec in self._map['args']:
-			if aspec['value'] == '<null>':
+			if aspec['value'] == self.node.null:
 				output.append(aspec['default'])
 			else:	
 				output.append(aspec['value'])
@@ -62,19 +47,34 @@ class Instrument(DG):
 	def kwargs(self):
 		output = {}
 		for kspec in self._map['kwargs']:
-			if kspec['value'] == '<null>':
+			if kspec['value'] == self.node.null:
 				output[kspec] = kspec['default'])
 			else:
 				output[kspec] = kspec['vaue'])
 		return output
+	# --------------------------------------------------------------------------
+	
+	def build(self):
+		self._map = spec
+		method = self.node.all_packages[self.package_name]['methods'][self.method_name]
+		for arg in self._spec['args']:
+			if arg['default'] == self.node.null:
+				self._map['args'][arg]['default'] = method['args'][arg]['default']
 
+		for kwarg in self._spec['kwargs']:
+			if kwarg['default'] == self.node.null:
+				self._map['kwargs'][kwarg]['default'] = method['kwargs'][kwarg]['default']
+
+		return output
+	# --------------------------------------------------------------------------
+	
 	def fire(self):
 		# INFORMER HOOK
 		message = 'fire', self.node.name, self.name, self.args, self.kwargs
 		self.node.informer.log('instruments', message=message)
 		# ----------------------------------------------------------------------
 
-		method = self.node.packages[self.package_name]['methods'][self.method_name]
+		method = self.node.all_packages[self.package_name]['methods'][self.method_name]
 		method(*self.args.values(), **self.kwargs)
 # ------------------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ def main():
 	help(__main__)
 # ------------------------------------------------------------------------------
 
-__all__ = ['Instrument', 'Interface']
+__all__ = ['Instrument']
 
 if __name__ == '__main__':
 	main()
