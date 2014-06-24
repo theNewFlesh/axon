@@ -20,11 +20,12 @@ from axon.utilities.utilities import Base
 # ------------------------------------------------------------------------------
 
 class DG(Base):
-	def __init__(self, spec):
+	def __init__(self, spec, owner):
 		super(DG, self).__init__()
 		self._cls = 'DG'
 		self._spec = spec
 		self._map = {}
+		self._owner = owner
 		self.build()
 	# --------------------------------------------------------------------------
 	
@@ -43,22 +44,25 @@ class DG(Base):
 	@property
 	def name(self):
 		return self._map['name']
+
+	@property
+	def owner(self):
+		return self._owner
 	# --------------------------------------------------------------------------
 	
 	def build(self):
 		self._map['name'] = self._spec['name']
 # ------------------------------------------------------------------------------
 
-class Component(Base):
-	def __init__(self, spec, node):
-		super(Component, self).__init__(spec)
+class Component(DG):
+	def __init__(self, spec, owner):
+		super(Component, self).__init__(spec, owner)
 		self._cls = 'Component'
-		self._node = node
 	# --------------------------------------------------------------------------
 	
 	@property
 	def node(self):
-		return self._node
+		return self._owner
 # ------------------------------------------------------------------------------
 
 def main():
