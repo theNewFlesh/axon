@@ -16,10 +16,10 @@
 from collections import OrderedDict
 
 from axon.utilities.errors import *
-from axon.core.dg import Component
-from axon.core.nodes.components.executor import Executor
-from axon.core.nodes.components.port import *
-from axon.core.nodes.components.instrument import *
+from axon.core.components.dg import Component
+from axon.core.components.executor import Executor
+from axon.core.components.port import *
+from axon.core.components.instrument import *
 from axon.utilities.informer import Informer
 # ------------------------------------------------------------------------------
 

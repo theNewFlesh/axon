@@ -14,10 +14,8 @@
 # ------------------------------------------------------------------------------
 
 import copy
-from collections import OrderedDict
-
 from axon.utilities.errors import *
-from axon.core.dg import DG
+from axon.core.components.dg import Component
 # ------------------------------------------------------------------------------
 
 class InPort(Component):

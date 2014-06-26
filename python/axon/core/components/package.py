@@ -16,7 +16,7 @@
 from collections import *
 
 from axon.utilities.errors import *
-from axon.dependency.graph.nodes.components.dg import DG
+from axon.core.components.dg import Component
 # ------------------------------------------------------------------------------
 
 class Package(Component):

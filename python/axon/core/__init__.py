@@ -1,2 +1,2 @@
-import nodes
+import components
 import scenes

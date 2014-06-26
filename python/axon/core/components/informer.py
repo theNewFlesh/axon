@@ -17,7 +17,7 @@ from collections import *
 
 from axon.utilities.errors import *
 from axon.utilities.utilities import is_iterable
-from axon.dependency.graph.nodes.components.dg import Component
+from axon.core.components.dg import Component
 # ------------------------------------------------------------------------------
 
 class Informer(Component):

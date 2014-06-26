@@ -16,7 +16,7 @@
 from collections import *
 
 from axon.utilities.errors import *
-from axon.core.dg import Component
+from axon.core.components.dg import Component
 # ------------------------------------------------------------------------------
 
 class Instrument(Component):

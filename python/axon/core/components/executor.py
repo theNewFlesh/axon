@@ -13,10 +13,8 @@
 '''
 # ------------------------------------------------------------------------------
 
-from collections import OrderedDict
-
 from axon.utilities.errors import *
-from axon.dependencygraph.nodes.components.dg import DG
+from axon.core.components.dg import DG
 # ------------------------------------------------------------------------------
 
 class Executor(Component):
