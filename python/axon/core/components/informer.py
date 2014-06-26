@@ -67,8 +67,8 @@ class Informer(Component):
 		return output
 	# --------------------------------------------------------------------------
 	
-	def build(self):
-		spec = self._spec
+	def build(self, spec):
+		self._spec = spec
 		self._map['name'] = spec['name']
 		self._map['state'] = spec['state']
 		self._map['logs'] = spec['logs']

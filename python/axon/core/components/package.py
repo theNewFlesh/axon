@@ -46,9 +46,14 @@ class Package(Component):
         return self._map['methods']
     # --------------------------------------------------------------------------
 
-    def build(self):
-        self._map = self._spec
-        self._instance = self.create_instance()
+    def build(self, spec):
+        self._spec = spec
+        self._map['name'] = spec['name']
+        self._map['type'] = spec['type']
+        self._map['class'] = spec['class']
+        self._map['init_args'] = spec['init_args']
+        self._map['init_kwargs'] = spec['init_kwargs']
+        self._map['instance'] = self.create_instance()
 
         for mspec in self._spec['methods']:
             method = self.create_method(mspec)

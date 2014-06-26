@@ -24,7 +24,6 @@ class Scene(DG):
 	def __init__(self, spec):
 		super(Scene, self).__init__(spec)
 		self._cls = 'Scene'
-		self._map['informer'] = self.create_informer(self.spec['informer'])
 	# --------------------------------------------------------------------------
 
 	@property
@@ -40,9 +39,9 @@ class Scene(DG):
 		return self._map['nodes']
 	# --------------------------------------------------------------------------
 
-	def build(self):
-		spec = self._spec
+	def build(self, spec):
 		self._map['name'] = spec['name']
+		self._map['informer'] = self.create_informer(self.spec['informer'])
 		self._map['source_library'] = spec['source_library']
 		self._map['nodes'] = spec['nodes']
 	# --------------------------------------------------------------------------
@@ -73,6 +72,18 @@ class Scene(DG):
 
 	def destroy_node(self, node_name):
 		del self.nodes[node_name]
+
+	def update_instruments(self, spec, node):
+		node = self.nodes[spec['name']]
+		node.update_instruments(spec)
+
+	def update_informer(self, spec, node):
+		node = self.nodes[spec['name']]
+		node.update_informer(spec)
+
+	def rebuild(self, spec, node):
+		node = self.nodes[spec['name']]
+		node.build(spec)
 
 	def connect_ports(self, out_port, in_port):	
 		# INFORMER HOOK

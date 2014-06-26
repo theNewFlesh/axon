@@ -27,8 +27,6 @@ class Node(DG):
 	def __init__(self, spec):
 		super(Node, self).__init__(spec)
 		self._cls = 'Node'
-		self._map['executor'] = self.create_executor(self.spec['executor'])
-		self._map['informer'] = self.create_informer(self.spec['informer'])
 	# --------------------------------------------------------------------------
 	
 	@property
@@ -50,9 +48,9 @@ class Node(DG):
 	@property
 	def all_ports(self):
 		output = {}
-		for _type in self._map['ports']:
-			for port in _type:
-				output[port] = _type[port]
+		for type_ in self._map['ports']:
+			for port in type_:
+				output[port] = type_[port]
 
 	@property
 	def in_ports(self):
@@ -69,9 +67,9 @@ class Node(DG):
 	@property
 	def all_packages(self):
 		output = {}
-		for _type in self._map['packages']:
-			for package in _type:
-				output[package] = _type[package]
+		for type_ in self._map['packages']:
+			for package in type_:
+				output[package] = type_[package]
 		return output
 
 	@property
@@ -95,16 +93,18 @@ class Node(DG):
 		return self._map['instruments']
 	# --------------------------------------------------------------------------
 	
-	def build(self):
-		spec = self._spec
+	def build(self, spec):
+		self._spec = spec
+		self._map['executor'] = self.create_executor(spec['executor'])
+		self._map['informer'] = self.create_informer(spec['informer'])
 		self._map['name'] = spec['name']
 		self._map['type'] = spec['type']
 		self._map['null'] = spec['null']
 
-		for _type in spec['packages']:
-			for pspec in _type:
+		for type_ in spec['packages']:
+			for pspec in type_:
 				package = self.create_package(pspec)
-				self._map['packages'][_type][package.name] = package
+				self._map['packages'][type_][package.name] = package
 
 		self._map['instruments'] = OrderedDict()
 

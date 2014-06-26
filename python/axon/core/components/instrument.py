@@ -54,14 +54,15 @@ class Instrument(Component):
 		return output
 	# --------------------------------------------------------------------------
 	
-	def build(self):
-		self._map = spec
+	def build(self, spec):
+		self._spec = spec
+		self._map['name'] = spec['name']
 		method = self.node.all_packages[self.package_name]['methods'][self.method_name]
-		for arg in self._spec['args']:
+		for arg in spec['args']:
 			if arg['default'] == self.node.null:
 				self._map['args'][arg]['default'] = method['args'][arg]['default']
 
-		for kwarg in self._spec['kwargs']:
+		for kwarg in spec['kwargs']:
 			if kwarg['default'] == self.node.null:
 				self._map['kwargs'][kwarg]['default'] = method['kwargs'][kwarg]['default']
 

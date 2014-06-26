@@ -23,6 +23,11 @@ class Executor(Component):
 		self._cls = 'DG'
 	# --------------------------------------------------------------------------
 	
+	def build(self, spec):
+		self._spec = spec
+		self._map['name'] = spec['name']
+	# --------------------------------------------------------------------------
+		
 	def propagate_packages(self):
 		# INFORMER HOOK
 		message = 'propagate_packages', self.node.name

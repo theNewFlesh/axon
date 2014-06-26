@@ -23,16 +23,12 @@ class DG(Base):
 	def __init__(self, spec, owner):
 		super(DG, self).__init__()
 		self._cls = 'DG'
-		self._spec = spec
+		self._spec = {}
 		self._map = {}
 		self._owner = owner
-		self.build()
+		self.build(spec)
 	# --------------------------------------------------------------------------
 	
-	@property
-	def cls(self):
-		return self._cls
-
 	@property
 	def spec(self):
 		return self._spec
@@ -50,7 +46,8 @@ class DG(Base):
 		return self._owner
 	# --------------------------------------------------------------------------
 	
-	def build(self):
+	def build(self, spec):
+		self._spec = spec
 		self._map['name'] = self._spec['name']
 # ------------------------------------------------------------------------------
 
