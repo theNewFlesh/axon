@@ -13,7 +13,6 @@
 '''
 # ------------------------------------------------------------------------------
 
-import copy
 from axon.utilities.errors import *
 from axon.core.dg import Component
 # ------------------------------------------------------------------------------
@@ -64,51 +63,44 @@ class InPort(Component):
 			self.set_state('waiting')
 	# --------------------------------------------------------------------------
 
-	def connect_port(self, port):
+	def connect(self, port):
 		# INFORMER HOOK
-		message = 'connect_port', self.node.name, port.name
+		message = 'connect', self.node.name, port.name
 		self.node.informer.log('ports', message)
 		# ----------------------------------------------------------------------
 
 		# add in port to connected out port's connections dict
-		port._add_connected_port(self)
-		self.connected_port[port.name] = port
+		port.connect_port(self)
+		self._map['connected_port'] = port
 		executor = self.node.executor
 		executor.update_packages()
 		executor.update_node()
-		executor.propagate_packages()
 
-	def disconnect_port(self):
+	def disconnect(self):
 		# INFORMER HOOK
-		message = 'disconnect_port', self.node.name
+		message = 'disconnect', self.node.name
 		self.node.informer.log('ports', message)
 		# ----------------------------------------------------------------------
 
 		# remove in port from previously connected out port's connections dict
 		port = self.connected_port
-		port._remove_connected_port(self)
-		self.connected_port = None
+		port.disconnect_port(self)
+		self._map['connected_port'] = None
 		executor = self.node.executor
-		executor.initialize_packages()
+		executor.rebuild_packages()
 		executor.update_node()
 		executor.propagate_packages()
 	
-	def retrieve_package(self):
+	def retrieve_instance(self):
 		# INFORMER HOOK
 		message = 'retrieve_package', self.node.name, self.package_name
 		self.node.informer.log('ports', message)
 		# ----------------------------------------------------------------------
 		
-		connected_port = self.connected_port
-		if connected_port:
-			node = connected_port.values().node
-			package = node.all_packages[self.package.name]
-			instance = node.all_packages[self.package.name].instance
-			new_package = copy.copy(package)
-			instance = copy.copy(package.instance)
-			new_package.set_instance(instance)
-			return new_package
-			# return package
+		if self.connected_port:
+			node = self.connected_port.node
+			instance = node.all_packages[self.package_name].instance
+			return instance
 # ------------------------------------------------------------------------------
 
 class OutPort(Component):
@@ -143,10 +135,6 @@ class OutPort(Component):
 
 	def disconnect_port(self, port):
 		del self.connected_ports[port.name]
-
-	def send_package(self):
-		for key, port in self.connected_ports.iteritems():
-			port.retrieve_package()
 # ------------------------------------------------------------------------------
 
 def main():

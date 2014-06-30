@@ -63,12 +63,12 @@ class Scene(DG):
 
 	def create_class(self, spec):
 		if spec['class'] in self.sources:
-			return spec['class']
+			return self.sources[spec['class']]
 		else:
 			module = importlib.import_module(spec['module'], package=spec['path'])
-   			class_ = getattr(module, spec['class'])
-   			self.sources[spec['class']] = class_
-   			return class_
+			class_ = getattr(module, spec['class'])
+			self.sources[spec['class']] = class_
+			return class_
 
 	def create_node(self, spec):
 		spec['name'] = self.create_node_name(spec['name'])
@@ -110,18 +110,18 @@ class Scene(DG):
 		# INFORMER HOOK
 		message = ('connect_ports', out_port.node.name,
 		out_port.name, in_port.node.name, in_port.name)
-		self.informer.log('node', message)
+		self.informer.log('nodes', message)
 		# ----------------------------------------------------------------------
 		
-		in_port.connect_port(out_port)
+		in_port.connect(out_port)
 
 	def disconnect_port(self, in_port):
 		# INFORMER HOOK
 		message = 'disconnect_port', in_port.node.name, in_port.name
-		self.informer.log('node', message)
+		self.informer.log('nodes', message)
 		# ----------------------------------------------------------------------
 
-		in_port.disconnect_port()
+		in_port.disconnect()
 # ------------------------------------------------------------------------------
 
 def main():

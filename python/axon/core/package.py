@@ -60,10 +60,12 @@ class Package(Component):
         self._map['class'] = spec['class']
         self._map['init_args'] = spec['init_args']
         self._map['init_kwargs'] = spec['init_kwargs']
+        self._map['data'] = spec['data']
         self._map['instance'] = self.create_instance()
         self._map['methods'] = {}
-        self._map['data'] = spec['data']
+        self.build_methods(spec)
 
+    def build_methods(self, spec):
         for mspec in spec['methods']:
             method = self.create_method(mspec)
             self._map['methods'][mspec] = method

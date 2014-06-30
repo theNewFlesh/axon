@@ -142,10 +142,6 @@ class Node(DG):
 		return informer
 
 	def create_package(self, spec):
-		args = spec['init_args']
-		kwargs = spec['init_kwargs']
-		class_ = spec['class']
-		spec['init'] = class_(*args, **kwargs)
 		package = Package(spec, self)
 		return package
 

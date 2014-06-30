@@ -13,6 +13,7 @@
 '''
 # ------------------------------------------------------------------------------
 
+import copy
 from axon.utilities.errors import *
 from axon.core.dg import Component
 # ------------------------------------------------------------------------------
@@ -36,8 +37,7 @@ class Executor(Component):
 
 		for outport in self.node.out_ports.values():
 			for port in outport.connected_ports.values():
-				node = port.node
-				executor = node.executor
+				executor = port.node.executor
 				executor.update_packages()
 				executor.update_node()
 
@@ -48,13 +48,17 @@ class Executor(Component):
 		# ----------------------------------------------------------------------
 
 		for port in self.node.in_ports.values():
-			package = port.retrieve_package()
-			self.node.set_package(port.package_name, package)
+			instance = port.retrieve_instance()
+			# Not using copy sort of works but ruins the date of all preceding nodes
+			instance = copy.copy(instance)
+			package = self.node.all_packages[port.package_name]
+			package.set_instance(instance)
+			package.build_methods(package.spec)
 			port.change_state()
 
-	def reinstance_packages(self):
+	def rebuild_packages(self):
 		# INFORMER HOOK
-		message = 'reinstance_packages', self.node.name
+		message = 'rebuild_packages', self.node.name
 		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
