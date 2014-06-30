@@ -26,7 +26,8 @@ class Example():
 		self._data = data
 
 	def add_data(self, data):
-		self._data += data
+		output = self._data + data
+		self._data = output
 # ------------------------------------------------------------------------------
 
 def main():

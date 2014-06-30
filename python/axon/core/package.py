@@ -44,6 +44,14 @@ class Package(Component):
     @property
     def methods(self):
         return self._map['methods']
+
+    @property
+    def data(self):
+        for name in self._map['data']:
+            attr = self._map['data'][name]['attr']
+            datum = attr()
+            self._map['data'][name]['value'] = datum
+        return self._map['data']
     # --------------------------------------------------------------------------
 
     def build(self, spec):
@@ -61,9 +69,10 @@ class Package(Component):
             method = self.create_method(mspec)
             self._map['methods'][mspec] = method
 
-        for dspec in spec['data']:
-            datum = self.create_datum(dspec)
-            self._map['data'][dspec] = datum
+        for name, dspec in spec['data'].iteritems():
+            attr = self.create_attribute(dspec)
+            dspec['attr'] = attr
+            self._map['data'][name] = dspec
     # --------------------------------------------------------------------------
         
     def create_instance(self):
@@ -74,9 +83,10 @@ class Package(Component):
         method = getattr(self.instance, spec)
         return method
 
-    def create_datum(self, spec):
+    def create_attribute(self, spec):
+        attr = spec['attr']
         def func():
-            return getattr(self.instance, spec)
+            return getattr(self.instance, attr)
         return func
     # --------------------------------------------------------------------------
         
