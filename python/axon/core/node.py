@@ -16,19 +16,25 @@
 from collections import OrderedDict
 
 from axon.utilities.errors import *
-from axon.core.components.dg import Component
-from axon.core.components.executor import Executor
-from axon.core.components.port import *
-from axon.core.components.instrument import *
-from axon.utilities.informer import Informer
+from axon.utilities.utils import *
+from axon.core.dg import DG
+from axon.core.executor import Executor
+from axon.core.port import InPort, OutPort
+from axon.core.instrument import Instrument
+from axon.core.informer import NodeInformer
+from axon.core.package import Package
 # ------------------------------------------------------------------------------
 
 class Node(DG):
-	def __init__(self, spec):
-		super(Node, self).__init__(spec)
+	def __init__(self, spec, owner):
+		super(Node, self).__init__(spec, owner)
 		self._cls = 'Node'
 	# --------------------------------------------------------------------------
 	
+	@property
+	def type(self):
+		return self._map['type']
+
 	@property
 	def null(self):
 		return self._map['null']
@@ -48,9 +54,10 @@ class Node(DG):
 	@property
 	def all_ports(self):
 		output = {}
-		for type_ in self._map['ports']:
-			for port in type_:
-				output[port] = type_[port]
+		for type_ in self.ports:
+			for key, port in self.ports[type_].iteritems():
+				output[key] = port
+		return output
 
 	@property
 	def in_ports(self):
@@ -58,7 +65,7 @@ class Node(DG):
 
 	@property
 	def out_ports(self):
-		ports = self._map['ports']['out_ports']
+		return self._map['ports']['out_ports']
 
 	@property
 	def packages(self):
@@ -67,9 +74,9 @@ class Node(DG):
 	@property
 	def all_packages(self):
 		output = {}
-		for type_ in self._map['packages']:
-			for package in type_:
-				output[package] = type_[package]
+		for type_ in self.packages:
+			for name in self.packages[type_]:
+				output[name] = self.packages[type_][name]
 		return output
 
 	@property
@@ -100,24 +107,28 @@ class Node(DG):
 		self._map['name'] = spec['name']
 		self._map['type'] = spec['type']
 		self._map['null'] = spec['null']
+		self._map['packages'] = {}
+		self._map['ports'] = {}
+		self._map['ports']['in_ports'] = {}
+		self._map['ports']['out_ports'] = {}
 
-		for type_ in spec['packages']:
-			for pspec in type_:
+		for type_, val in spec['packages'].iteritems():
+			for k, pspec in val.iteritems():
 				package = self.create_package(pspec)
+				self._map['packages'][type_] = {}
 				self._map['packages'][type_][package.name] = package
 
 		self._map['instruments'] = OrderedDict()
-
-		for key in sorted(spec['instruments'].keys()):
-			ispec = spec['instruments'][key]
+		ispecs = spec_to_ordereddict(spec['instruments'])
+		for key, ispec in ispecs.iteritems():
 			instrument = self.create_instrument(ispec)
 			self._map['instruments'][instrument.name] = instrument
 
-		for inspec in spec['ports']['in_ports']:
+		for inspec in spec['ports']['in_ports'].values():
 			in_port = self.create_port(inspec)
 			self._map['ports']['in_ports'][in_port.name] = in_port
 
-		for outspec in spec['ports']['out_ports']:
+		for outspec in spec['ports']['out_ports'].values():
 			out_port = self.create_port(outspec)
 			self._map['ports']['out_ports'][out_port.name] = out_port
 	# --------------------------------------------------------------------------
@@ -127,12 +138,15 @@ class Node(DG):
 		return executor
 
 	def create_informer(self, spec):
-		informer = Informer(spec, self)
+		informer = NodeInformer(spec, self)
 		return informer
 
-	def create_package(self):
-		spec['init'] = spec['class'](*spec['init_args'], **spec['init_kwargs'])
-		package = Package(spec)
+	def create_package(self, spec):
+		args = spec['init_args']
+		kwargs = spec['init_kwargs']
+		class_ = spec['class']
+		spec['init'] = class_(*args, **kwargs)
+		package = Package(spec, self)
 		return package
 
 	def create_instrument(self, spec):
@@ -141,13 +155,15 @@ class Node(DG):
 
 	def create_port(self, spec):
 		if spec['type'] == 'in':
-			port = InPort(spec, self)
-			return port
+			return InPort(spec, self)
 		elif spec['type'] == 'out':
-			port = OutPort(spec, self)
-			return port
+			return OutPort(spec, self)
 		else:
 			raise TypeError('Invalid port type')
+	# --------------------------------------------------------------------------
+
+	def set_package(self, package_name, package):
+		self.all_packages[package_name] = package
 	# --------------------------------------------------------------------------
 
 	def filter_by_name(self, spec, name):
@@ -155,7 +171,7 @@ class Node(DG):
 		for key, val in spec.iteritems():
 			if val.name == name:
 				output[key] = val
-		return output
+		return output 
 
 	def filter_by_type(self, spec, itype):
 		output = {}

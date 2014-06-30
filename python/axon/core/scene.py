@@ -15,14 +15,16 @@
 
 import re
 import copy
+import importlib
 
-from axon.core.components.dg import DG
-from axon.utilities.informer import Informer
+from axon.core.dg import DG
+from axon.core.informer import SceneInformer
+from axon.core.node import Node
 # ------------------------------------------------------------------------------
 
 class Scene(DG):
-	def __init__(self, spec):
-		super(Scene, self).__init__(spec)
+	def __init__(self, spec, owner):
+		super(Scene, self).__init__(spec, owner)
 		self._cls = 'Scene'
 	# --------------------------------------------------------------------------
 
@@ -31,8 +33,8 @@ class Scene(DG):
 		return self._map['informer']
 
 	@property
-	def source_library(self):
-		return self._map['source_library']
+	def sources(self):
+		return self._map['sources']
 
 	@property
 	def nodes(self):
@@ -41,9 +43,13 @@ class Scene(DG):
 
 	def build(self, spec):
 		self._map['name'] = spec['name']
-		self._map['informer'] = self.create_informer(self.spec['informer'])
-		self._map['source_library'] = spec['source_library']
-		self._map['nodes'] = spec['nodes']
+		self._map['informer'] = self.create_informer(spec['informer'])
+		self._map['sources'] = {}
+		for cspec in spec['sources']:
+			create_class(cspec)
+		self._map['nodes'] = {}
+		for nspec in spec['nodes']:
+			create_node(nspec)
 	# --------------------------------------------------------------------------
 
 	def create_node_name(self, name):
@@ -55,20 +61,35 @@ class Scene(DG):
 				num += 1
 		return name + str(num)
 
+	def create_class(self, spec):
+		if spec['class'] in self.sources:
+			return spec['class']
+		else:
+			module = importlib.import_module(spec['module'], package=spec['path'])
+   			class_ = getattr(module, spec['class'])
+   			self.sources[spec['class']] = class_
+   			return class_
+
 	def create_node(self, spec):
 		spec['name'] = self.create_node_name(spec['name'])
 
 		# INFORMER HOOK
 		message = 'create_node', spec['name']
-		self.informer.log('node', message)
-		# ----------------------------------------------------------------------
+		self.informer.log('nodes', message)
+		# ----------------------------------------------------------------------	
 
-		for pspec in spec['packages']:
-			pspec['init'] = self.get_class(pspec['class'])
-
-		node = Node(spec)
+		for type_ in spec['packages'].values():
+			if type_:
+				for pspec in type_.values():
+					pspec['class'] = self.create_class(pspec['source'])
+				
+		node = Node(spec, self)
 		self.nodes[node.name] = node
 		return node
+
+	def create_informer(self, spec):
+		informer = SceneInformer(spec, self)
+		return informer
 
 	def destroy_node(self, node_name):
 		del self.nodes[node_name]

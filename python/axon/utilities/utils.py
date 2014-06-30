@@ -14,6 +14,7 @@
 # ------------------------------------------------------------------------------
 
 import re
+from collections import OrderedDict
 # ------------------------------------------------------------------------------
 
 class Base(object):
@@ -56,6 +57,16 @@ def is_iterable(item):
 	except TypeError:
 		return False
 	return True
+
+def spec_to_ordereddict(spec):
+    order = sorted(spec.keys())
+    new_dict = OrderedDict()
+    for key in order:
+        temp = spec[key]
+        new_key = temp.keys()[0]
+        new_val = temp[new_key]
+        new_dict[new_key] = new_val
+    return new_dict
 # ------------------------------------------------------------------------------
 
 def main():
@@ -67,7 +78,7 @@ def main():
 	help(__main__)
 # ------------------------------------------------------------------------------
 
-__all__ = ['Base', 'is_iterable']
+__all__ = ['Base', 'is_iterable', 'spec_to_ordereddict']
 
 if __name__ == '__main__':
 	main()

@@ -16,7 +16,7 @@
 from collections import OrderedDict
 
 from axon.utilities.errors import *
-from axon.utilities.utilities import Base
+from axon.utilities.utils import Base
 # ------------------------------------------------------------------------------
 
 class DG(Base):

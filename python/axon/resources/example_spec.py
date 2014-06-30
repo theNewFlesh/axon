@@ -13,8 +13,26 @@
 '''
 # ------------------------------------------------------------------------------
 
-spec = {
-    'name': 'foobar_node',
+scene_spec = {
+'name': 'scene',
+'informer': {
+        'name': 'informer',
+        'state': 'inactive',
+        'logs': {
+            'master': {
+                'name': 'master',
+                'state': 'inactive',
+                'data': []},
+            'nodes': {
+                'name': 'nodes',
+                'state': 'active',
+                'data': [] }}},
+'sources': {},
+'nodes': {}
+}
+
+node_spec = {
+    'name': 'example_node',
     'type': 'standard',
     'null': '<null>',
     'position': {
@@ -24,112 +42,97 @@ spec = {
             'in': {
                 'name': 'in',
                 'type': 'in',
-                'package': 'foobar_package',
+                'package_name': 'example_package',
                 'connected_port': None,
                 'state': 'ready'}},
         'out_ports': {
             'out': {
                 'name': 'out',
                 'type': 'out',
-                'package': 'foobar_package',
+                'package_name': 'example_package',
                 'connected_ports': {}}}
             },
-    'executor': '<executor>',
-    'informer': '<informer>',
+    'executor': {
+        'name':'executor'},
+    'informer': {
+        'name': 'informer',
+        'state': 'active',
+        'logs': {
+            'master': {
+                'name': 'master',
+                'state': 'inactive',
+                'data': []},
+            'executor': {
+                'name': 'executor',
+                'state': 'active',
+                'data': [] },
+            'ports': {
+                'name': 'ports',
+                'state': 'active',
+                'data': [] },
+            'instruments': {
+                'name': 'ports',
+                'state': 'inactive',
+                'data': [] }}},            
     'instruments': {
         1: {
-            'bar_instrument': {
-            'name': 'bar_instrument',
-            'package_name': 'foobar',
-            'method_name': 'bar',
-            'args': {
-                1: {
-                    'arg1': {
-                        'name': 'arg1',
-                        'default': [],
-                        'value': [5, 6],
-                        'widget': '<spinbox>'},
-                2: {
-                    'arg2': {
-                        'name': 'arg2',
-                        'default': 1, 
-                        'value': 8, 
-                        'widget': '<numberfield>'}}}},
-            'kwargs': {
-                1: {
-                    'kwarg1': {
-                        'name': 'kwarg1',
-                        'default': False,
-                        'value': '<null>',
-                        'widget': '<radiobutton>'}}}}},
+            'set_data_instrument': {
+                'name': 'set_data_instrument',
+                'package_name': 'example_package',
+                'method_name': 'set_data',
+                'args': {
+                    1: {
+                        'data': {
+                            'name': 'data',
+                            'default': 123,
+                            'value': 123,
+                            'widget': '<spinbox>'}}},
+                'kwargs': {} }}, 
         2: {
-            'foo_instrument': {
-            'name': 'foo_instrument',
-            'package_name': 'foobar',
-            'method_name': 'foo',
-            'args': {
-                1: {
-                    'arg1': {
-                        'name': 'arg1',
-                        'default': [],
-                        'value': [10, 20],
-                        'widget': '<spinbox>'}},
-                2: {
-                    'arg2': {
-                        'name': 'arg2',
-                        'default': '<null>', 
-                        'value': '<null>', 
-                        'widget': '<numberfield>'}}},
-            'kwargs': {
-                1:{
-                    'kwarg1': {
-                        'name': 'kwarg1',
-                        'default': True,
-                        'value': False,
-                        'widget': '<radiobutton>'}}}}}},
-    'packages': {
+            'add_data_instrument': {
+                'name': 'add_data_instrument',
+                'package_name': 'example_package',
+                'method_name': 'set_data',
+                'args': {
+                    1: {
+                        'data': {
+                            'name': 'data',
+                            'default': 123,
+                            'value': 123,
+                            'widget': '<spinbox>' }}},
+                'kwargs': {} }}}, 
+        'packages': {
             'standard': {
-                'foobar_package': {
-                    'name': 'foobar_package',
+                'example_package': {
+                    'name': 'example_package',
                     'type': 'standard',
-                    'class': 'Foobar',
-                    'instance': '<foobar>',
-                    'init_args': [1, 2, '<foobar_arg_3>'],
-                    'init_kwargs': [],
+                    'source': {
+                        'name': 'example',
+                        'path': '~/google_drive/code/projects/axon/python/',
+                        'module': 'axon.resources.example_model',
+                        'class': 'Example'},
+                    'class': '<Example>',
+                    'instance': '<Example>',
+                    'init_args': ['silly_exmaple'],
+                    'init_kwargs': {'data': None},
                     'methods': {
-                        'bar': {
+                        'set_data': {
                             'args': {
                                 1: {
-                                    'arg1': {
-                                        'name': 'arg1',
-                                        'default': []}},
-                                2: {
-                                    'arg2': {
-                                        'name': 'arg2',
-                                        'default': 1}}},
-                            'kwargs': {
-                                1: {
-                                    'kwarg1': {
-                                        'name': 'kwarg1',
-                                        'default': False}}}},
-                        'foo': {
+                                    'data': {
+                                        'name': 'data',
+                                        'default': 123 }}},
+                            'kwargs': {} },
+                        'add_data': {
                             'args': {
                                 1: {
-                                    'arg1': {
-                                        'name': 'arg1',
-                                        'default': []}},
-                                2: {    
-                                    'arg2': {
-                                        'name': 'arg2',
-                                        'default': 1}}},
-                            'kwargs': {
-                                1: {
-                                    'kwarg1': {
-                                        'name': 'kwarg1',
-                                        'default': True}}}}},
-                'data': {
-                    'some_data': 'data'}}},
-                'source': None,
-                'generator': None,
-                'target': None}
+                                    'data': {
+                                        'name': 'data',
+                                        'default': 321 }}},
+                            'kwargs': {} }},
+                    'data': {
+                        'data': None }}},
+            'source': {},
+            'generator': {},  
+            'target': {} }
 }

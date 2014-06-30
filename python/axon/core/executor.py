@@ -14,7 +14,7 @@
 # ------------------------------------------------------------------------------
 
 from axon.utilities.errors import *
-from axon.core.components.dg import DG
+from axon.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class Executor(Component):
@@ -34,10 +34,8 @@ class Executor(Component):
 		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
-		outports = self.node.out_ports
-		for outport in outports:
-			connected_ports = outport.connected_ports
-			for port in connected_ports:
+		for outport in self.node.out_ports.values():
+			for port in outport.connected_ports.values():
 				node = port.node
 				executor = node.executor
 				executor.update_packages()
@@ -49,22 +47,21 @@ class Executor(Component):
 		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
-		node = self.node
-		for port in node.in_ports:
+		for port in self.node.in_ports.values():
 			package = port.retrieve_package()
-			package_name = port.get_package_name()
-			node.set_package(package_name, package)
+			self.node.set_package(port.package_name, package)
 			port.change_state()
 
-	def initialize_packages(self):
+	def reinitialize_packages(self):
 		# INFORMER HOOK
-		message = 'initialize_packages', self.node.name
+		message = 'reinitialize_packages', self.node.name
 		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
-		for port in self.node.in_ports:
-			if port.get_connected_port() == None:
-				self.node.initialize_package(port.get_package_name())
+		for port in self.node.in_ports.values():
+			if port.connected_port == None:
+				package = self.node.all_packages[port.package_name]
+				package.reinitialize()
 
 	def generate_packages(self):
 		# INFORMER HOOK
@@ -79,14 +76,15 @@ class Executor(Component):
 		target.set_instance(instance)
 	# --------------------------------------------------------------------------
 
-	def get_state_of_in_ports(self):
-		for port in self.node.in_ports:
-			if port.get_state() == 'waiting':
+	@property
+	def state_of_in_ports(self):
+		for port in self.node.in_ports.values():
+			if port.state == 'waiting':
 				return 'waiting'
 		return 'ready'
 
 	def revert_in_port_states(self):
-		for port in self.node.in_ports:
+		for port in self.node.in_ports.values():
 			port.change_state()
 
 	def update_node(self):
@@ -95,30 +93,13 @@ class Executor(Component):
 		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
-		if self.get_state_of_in_ports() == 'ready':
+		if self.state_of_in_ports == 'ready':
 			self.revert_in_port_states()
 
-			if self.node.source_package and self.node.target_package and self.node.generator_package:
+			if self.node.type == 'generator':
 				self.generate_packages()
-			
-			for ispec in self.node.instruments(registered_only=True):
-				# INFORMER HOOK
-				message = 'fire', self.node.name, self.name, self._args.values(), self._kwargs.values()
-				self.node.informer.log('instruments', message)
-				# ----------------------------------------------------------------------
 
-				method = self.node.get_method method = ispec['method']
-				args = [x['value'] for x in ispec['args']]
-				kwargs = {}
-				for kwarg in ispec['kwargs']:
-					kwargs[kwarg] = kwarg['value']
-
-				method(*args, **kwargs)
-
-		method = self.node.get_package(self._package_name).get_method(self._method_name)
-		method(*self._args.values(), **self._kwargs)
-
-			for instrument in self.get_registered_instruments():
+			for instrument in self.node.instruments.values():
 				instrument.fire()
 
 			self.propagate_packages()

@@ -16,7 +16,8 @@
 from collections import *
 
 from axon.utilities.errors import *
-from axon.core.components.dg import Component
+from axon.utilities.utils import *
+from axon.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class Instrument(Component):
@@ -36,7 +37,7 @@ class Instrument(Component):
 	@property
 	def args(self):
 		output = []  
-		for aspec in self._map['args']:
+		for aspec in self._map['args'].values():
 			if aspec['value'] == self.node.null:
 				output.append(aspec['default'])
 			else:	
@@ -48,35 +49,42 @@ class Instrument(Component):
 		output = {}
 		for kspec in self._map['kwargs']:
 			if kspec['value'] == self.node.null:
-				output[kspec] = kspec['default'])
+				output[kspec] = kspec['default']
 			else:
-				output[kspec] = kspec['vaue'])
+				output[kspec] = kspec['vaue']
 		return output
 	# --------------------------------------------------------------------------
 	
 	def build(self, spec):
 		self._spec = spec
 		self._map['name'] = spec['name']
-		method = self.node.all_packages[self.package_name]['methods'][self.method_name]
-		for arg in spec['args']:
-			if arg['default'] == self.node.null:
-				self._map['args'][arg]['default'] = method['args'][arg]['default']
+		self._map['package_name'] = spec['package_name']
+		self._map['method_name'] = spec['method_name']
 
-		for kwarg in spec['kwargs']:
-			if kwarg['default'] == self.node.null:
-				self._map['kwargs'][kwarg]['default'] = method['kwargs'][kwarg]['default']
+		package = self.node.all_packages[self.package_name]
+		method = package.methods[self.method_name]
 
-		return output
+		args = spec_to_ordereddict(spec['args'])
+		for key, val in args.iteritems():
+			if val['default'] == self.node.null:
+				val['default'] = method['args'][key]['default']
+		self._map['args'] = args
+
+		kwargs = spec_to_ordereddict(spec['kwargs'])
+		for key, val in kwargs.iteritems():
+			if val['default'] == self.node.null:
+				val['default'] = method['kwargs'][key]['default']
+		self._map['kwargs'] = kwargs
 	# --------------------------------------------------------------------------
 	
 	def fire(self):
 		# INFORMER HOOK
 		message = 'fire', self.node.name, self.name, self.args, self.kwargs
-		self.node.informer.log('instruments', message=message)
+		self.node.informer.log('instruments', message)
 		# ----------------------------------------------------------------------
 
-		method = self.node.all_packages[self.package_name]['methods'][self.method_name]
-		method(*self.args.values(), **self.kwargs)
+		method = self.node.all_packages[self.package_name].methods[self.method_name]
+		method(*self.args, **self.kwargs)
 # ------------------------------------------------------------------------------
 
 def main():

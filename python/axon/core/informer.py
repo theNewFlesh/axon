@@ -16,8 +16,8 @@
 from collections import *
 
 from axon.utilities.errors import *
-from axon.utilities.utilities import is_iterable
-from axon.core.components.dg import Component
+from axon.utilities.utils import is_iterable
+from axon.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class Informer(Component):
@@ -38,18 +38,6 @@ class Informer(Component):
 	def master_log(self):
 		return self.logs['master']
 
-	@property
-	def executor_log(self):
-		return self.logs['executor']
-	
-	@property
-	def ports_log(self):
-		return self.logs['ports']
-
-	@property
-	def instruments_log(self):
-		return self.logs['instruments']
-	
 	@property
 	def active_logs(self):
 		output = {}
@@ -88,25 +76,59 @@ class Informer(Component):
 	# --------------------------------------------------------------------------
 
 	def log(self, name, message):
-		self.logs[name]['date'].append(message)
-		self.master_log['date'].append(message)
+		self.logs[name]['data'].append(message)
+		self.master_log['data'].append(message)
 
 		if self.state == 'active':
-			if self.logs['name']['state'] == 'active':
+			if self.logs[name]['state'] == 'active':
 				self.report(name)
 
-	def report(self, log_name):
-		last_line = self.logs(log_name)['data'][-1]
+	def report(self, log):
+		last_line = self.logs[log]['data'][-1]
 		if type(last_line) is str:
-			print last line
-		else: is_iterable(last_line):
+			print last_line
+		else:
 			# formatting is currently ad hoc
 			# may be reimplemented as an automatic system
-			fmt = '{:<17}  {:<35}'
+			fmt = '{:<18}  {:<35}'
 			new_last_line = list(last_line)[2:]
 			for line in new_last_line:
 				fmt += '  {:<15}'
 			print fmt.format(*last_line)
+# ------------------------------------------------------------------------------
+
+class NodeInformer(Informer):
+	def __init__(self, spec, node):
+		super(Informer, self).__init__(spec, node)
+		self._cls = 'NodeInformer'
+	# --------------------------------------------------------------------------
+	
+	@property
+	def executor_log(self):
+		return self.logs['executor']
+	
+	@property
+	def ports_log(self):
+		return self.logs['ports']
+
+	@property
+	def instruments_log(self):
+		return self.logs['instruments']
+# ------------------------------------------------------------------------------
+	
+class SceneInformer(Informer):
+	def __init__(self, spec, node):
+		super(Informer, self).__init__(spec, node)
+		self._cls = 'SceneInformer'
+	# --------------------------------------------------------------------------
+	
+	@property
+	def sources_log(self):
+		return self.logs['sources']
+
+	@property
+	def nodes_log(self):
+		return self.logs['nodes']
 # ------------------------------------------------------------------------------
 
 def main():
@@ -118,7 +140,7 @@ def main():
 	help(__main__)
 # ------------------------------------------------------------------------------
 
-__all__ = ['Informer']
+__all__ = ['Informer', 'NodeInformer', 'SceneInformer']
 
 if __name__ == '__main__':
 	main()

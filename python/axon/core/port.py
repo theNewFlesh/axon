@@ -15,7 +15,7 @@
 
 import copy
 from axon.utilities.errors import *
-from axon.core.components.dg import Component
+from axon.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class InPort(Component):
@@ -29,8 +29,8 @@ class InPort(Component):
 		return self._map['type']
 
 	@property
-	def package(self):
-		return self._map['package']
+	def package_name(self):
+		return self._map['package_name']
 
 	@property
 	def connected_port(self):
@@ -41,13 +41,27 @@ class InPort(Component):
 		self._map['state']
 	# --------------------------------------------------------------------------
 
-	def build(self):
-		spec = self._spec
+	def build(self, spec):
+		self._spec = spec
 		self._map['name'] = spec['name']
 		self._map['type'] = spec['type']
-		self._map['package'] = self.node.all_packages[spec['package']]
+		self._map['package_name'] = spec['package_name']
 		self._map['connected_port'] = None
 		self._map['state'] = spec['state']
+	# --------------------------------------------------------------------------
+
+	def set_state(self, state):
+		self._map['state'] = state
+
+	def change_state(self):
+		if self.connected_port == None:
+			self.set_state('ready')
+		elif len(self.node.in_ports) < 2:
+			self.set_state('ready')
+		elif self.state == 'waiting':
+			self.set_state('ready')
+		else:
+			self.set_state('waiting')
 	# --------------------------------------------------------------------------
 
 	def connect_port(self, port):
@@ -81,67 +95,50 @@ class InPort(Component):
 	
 	def retrieve_package(self):
 		# INFORMER HOOK
-		message = 'retrieve_package', self.node.name, self.package.name
+		message = 'retrieve_package', self.node.name, self.package_name
 		self.node.informer.log('ports', message)
 		# ----------------------------------------------------------------------
 		
-		connected_node = self.connected_port.node
-		package = connected_node.all_packages[self.package.name]
-		instance = connected_node.all_packages[self.package.name].instance
-		new_package = copy.copy(package)
-		instance = copy.copy(package.instance)
-		new_package.set_instance(instance)
-		return new_package
-		# return package
-	# --------------------------------------------------------------------------
-
-	def set_state(self, state):
-		self._map['state'] = state
-
-	def change_state(self):
-		if self.connected_port == None:
-			self.set_state('ready')
-		elif len(self.node.in_ports) < 2:
-			self.set_state('ready')
-		elif self.state == 'waiting':
-			self.set_state('ready')
-		else:
-			self.set_state('waiting')
+		connected_port = self.connected_port
+		if connected_port:
+			node = connected_port.values().node
+			package = node.all_packages[self.package.name]
+			instance = node.all_packages[self.package.name].instance
+			new_package = copy.copy(package)
+			instance = copy.copy(package.instance)
+			new_package.set_instance(instance)
+			return new_package
+			# return package
 # ------------------------------------------------------------------------------
 
-class OutPort(DG):
+class OutPort(Component):
 	def __init__(self, spec, node):
-		super(OutPort, self).__init__(spec)
+		super(OutPort, self).__init__(spec, node)
 		self._cls = 'OutPort'
-		self._node = node
 	# --------------------------------------------------------------------------
-		
-	@property
-	def node(self):
-		return self._node
 
 	@property
 	def type(self):
 		return self._map['type']
 
 	@property
-	def package(self):
-		return self._map['package']
+	def package_name(self):
+		return self._map['package_name']
 
 	@property
 	def connected_ports(self):
 		return self._map['connected_ports']
 	# --------------------------------------------------------------------------
 
-	def build(self):
-		spec = self._spec
+	def build(self, spec):
+		self._spec = spec
 		self._map['name'] = spec['name']
 		self._map['type'] = spec['type']
-		self._map['package'] = self.node.all_packages[spec['package']]
+		self._map['package_name'] = spec['package_name']
 		self._map['connected_ports'] = {}
 	# --------------------------------------------------------------------------
 
-	def connected_port(self, port):
+	def connect_port(self, port):
 		self.connected_ports[port.name] = port
 
 	def disconnect_port(self, port):
