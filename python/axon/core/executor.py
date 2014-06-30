@@ -52,16 +52,16 @@ class Executor(Component):
 			self.node.set_package(port.package_name, package)
 			port.change_state()
 
-	def reinitialize_packages(self):
+	def reinstance_packages(self):
 		# INFORMER HOOK
-		message = 'reinitialize_packages', self.node.name
+		message = 'reinstance_packages', self.node.name
 		self.node.informer.log('executor', message)
 		# ----------------------------------------------------------------------
 
 		for port in self.node.in_ports.values():
 			if port.connected_port == None:
 				package = self.node.all_packages[port.package_name]
-				package.reinitialize()
+				package.build(package.spec)
 
 	def generate_packages(self):
 		# INFORMER HOOK

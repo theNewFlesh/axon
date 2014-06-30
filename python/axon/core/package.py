@@ -47,9 +47,8 @@ class Package(Component):
 
     @property
     def data(self):
-        for name in self._map['data']:
-            attr = self._map['data'][name]['attr']
-            datum = attr()
+        for name, spec in self._map['data'].iteritems():
+            datum = self.create_attribute(spec)()
             self._map['data'][name]['value'] = datum
         return self._map['data']
     # --------------------------------------------------------------------------
@@ -63,16 +62,11 @@ class Package(Component):
         self._map['init_kwargs'] = spec['init_kwargs']
         self._map['instance'] = self.create_instance()
         self._map['methods'] = {}
-        self._map['data'] = {}
+        self._map['data'] = spec['data']
 
         for mspec in spec['methods']:
             method = self.create_method(mspec)
             self._map['methods'][mspec] = method
-
-        for name, dspec in spec['data'].iteritems():
-            attr = self.create_attribute(dspec)
-            dspec['attr'] = attr
-            self._map['data'][name] = dspec
     # --------------------------------------------------------------------------
         
     def create_instance(self):
@@ -92,9 +86,6 @@ class Package(Component):
         
     def set_instance(self, instance):
         self._map['instance'] = instance
-
-    def reinitialize(self):
-        self.set_instance(self.create_instance())
 # ------------------------------------------------------------------------------
 
 def main():
