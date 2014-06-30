@@ -12,7 +12,6 @@
 .. moduleauthor:: Alex Braun <ABraunCCS@gmail.com>
 '''
 # ------------------------------------------------------------------------------
-
 scene_spec = {
 'name': 'scene',
 'informer': {
@@ -68,31 +67,31 @@ node_spec = {
                 'data': [] },
             'ports': {
                 'name': 'ports',
-                'state': 'active',
+                'state': 'inactive',
                 'data': [] },
             'instruments': {
                 'name': 'ports',
-                'state': 'inactive',
+                'state': 'active',
                 'data': [] }}},            
     'instruments': {
-        1: {
-            'set_data_instrument': {
-                'name': 'set_data_instrument',
-                'package_name': 'example_package',
-                'method_name': 'set_data',
-                'args': {
-                    1: {
-                        'data': {
-                            'name': 'data',
-                            'default': 123,
-                            'value': 123,
-                            'widget': '<spinbox>'}}},
-                'kwargs': {} }}, 
+#         1: {
+#             'set_data_instrument': {
+#                 'name': 'set_data_instrument',
+#                 'package_name': 'example_package',
+#                 'method_name': 'set_data',
+#                 'args': {
+#                     1: {
+#                         'data': {
+#                             'name': 'data',
+#                             'default': 123,
+#                             'value': 123,
+#                             'widget': '<spinbox>'}}},
+#                 'kwargs': {} }}, 
         2: {
             'add_data_instrument': {
                 'name': 'add_data_instrument',
                 'package_name': 'example_package',
-                'method_name': 'set_data',
+                'method_name': 'add_data',
                 'args': {
                     1: {
                         'data': {
@@ -113,8 +112,8 @@ node_spec = {
                         'class': 'Example'},
                     'class': '<Example>',
                     'instance': '<Example>',
-                    'init_args': ['silly_exmaple'],
-                    'init_kwargs': {'data': None},
+                    'init_args': ['silly_example'],
+                    'init_kwargs': {'data': 0},
                     'methods': {
                         'set_data': {
                             'args': {
@@ -131,7 +130,14 @@ node_spec = {
                                         'default': 321 }}},
                             'kwargs': {} }},
                     'data': {
-                        'data': None }}},
+                        'data': {
+                            'name': 'data',
+                            'attr': 'data',
+                            'value': None},
+                        'name': {
+                            'name': 'name',
+                            'attr': '_name',
+                            'value': None }}}},
             'source': {},
             'generator': {},  
             'target': {} }
