@@ -7,7 +7,7 @@
 .. module:: instrument
 	:date: 01.25.2014
 	:platform: Unix
-	:synopsis: Python dependency graph instrument
+	:synopsis: Client dependency graph instrument
 	
 .. moduleauthor:: Alex Braun <ABraunCCS@gmail.com>
 '''
@@ -17,7 +17,7 @@ from collections import *
 
 from axon.utilities.errors import *
 from axon.utilities.utils import *
-from axon.core.dg import Component
+from axon.client.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class Instrument(Component):
@@ -78,13 +78,7 @@ class Instrument(Component):
 	# --------------------------------------------------------------------------
 	
 	def fire(self):
-		# INFORMER HOOK
-		message = 'fire', self.node.name, self.name, self.args, self.kwargs
-		self.node.informer.log('instruments', message)
-		# ----------------------------------------------------------------------
-
-		method = self.node.all_packages[self.package_name].methods[self.method_name]
-		method(*self.args, **self.kwargs)
+		pass
 # ------------------------------------------------------------------------------
 
 def main():

@@ -29,7 +29,7 @@
 .. module:: node
 	:date: 06.30.2014
 	:platform: Unix
-	:synopsis: Python dependency graph node
+	:synopsis: Client dependency graph node
 	
 .. moduleauthor:: Alex Braun <ABraunCCS@gmail.com>
 '''
@@ -39,12 +39,12 @@ from collections import OrderedDict
 
 from axon.utilities.errors import *
 from axon.utilities.utils import *
-from axon.core.dg import DG
-from axon.core.executor import Executor
-from axon.core.port import InPort, OutPort
-from axon.core.instrument import Instrument
-from axon.core.informer import NodeInformer
-from axon.core.package import Package
+from axon.client.core.dg import DG
+from axon.client.core.executor import Executor
+from axon.client.core.port import InPort, OutPort
+from axon.client.core.instrument import Instrument
+from axon.client.core.informer import NodeInformer
+from axon.client.core.package import Package
 # ------------------------------------------------------------------------------
 
 class Node(DG):
@@ -179,24 +179,15 @@ class Node(DG):
 		else:
 			raise TypeError('Invalid port type')
 	# --------------------------------------------------------------------------
+	
+	def set_name(self, name):
+		self._spec['name'] = name
 
-	def set_package(self, package_name, package):
-		self.all_packages[package_name] = package
-	# --------------------------------------------------------------------------
+	def set_type(self, type_):
+		self._spec['type'] = type_
 
-	def filter_by_name(self, spec, name):
-		output = {}
-		for key, val in spec.iteritems():
-			if val.name == name:
-				output[key] = val
-		return output 
-
-	def filter_by_type(self, spec, itype):
-		output = {}
-		for key, val in spec.iteritems():
-			if val.type == itype:
-				output[key] = val
-		return output
+	def set_null(self, null):
+		self._spec['null'] = null
 # ------------------------------------------------------------------------------
 
 def main():

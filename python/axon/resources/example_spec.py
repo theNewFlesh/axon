@@ -97,19 +97,19 @@ node_spec = {
                 'state': 'active',
                 'data': [] }}},            
     'instruments': {
-#         1: {
-#             'set_data_instrument': {
-#                 'name': 'set_data_instrument',
-#                 'package_name': 'example_package',
-#                 'method_name': 'set_data',
-#                 'args': {
-#                     1: {
-#                         'data': {
-#                             'name': 'data',
-#                             'default': 123,
-#                             'value': 123,
-#                             'widget': '<spinbox>'}}},
-#                 'kwargs': {} }}, 
+        1: {
+            'set_data_instrument': {
+                'name': 'set_data_instrument',
+                'package_name': 'example_package',
+                'method_name': 'set_data',
+                'args': {
+                    1: {
+                        'data': {
+                            'name': 'data',
+                            'default': 123,
+                            'value': 123,
+                            'widget_type': '<spinbox>'}}},
+                'kwargs': {} }}, 
         2: {
             'add_data_instrument': {
                 'name': 'add_data_instrument',
@@ -121,7 +121,7 @@ node_spec = {
                             'name': 'data',
                             'default': 123,
                             'value': 123,
-                            'widget': '<spinbox>' }}},
+                            'widget_type': '<spinbox>' }}},
                 'kwargs': {} }}}, 
         'packages': {
             'standard': {

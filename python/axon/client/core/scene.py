@@ -29,7 +29,7 @@
 .. module:: scene
 	:date: 06.30.2014
 	:platform: Unix
-	:synopsis: Dependency graph scene
+	:synopsis: Client dependency graph scene
 	
 .. moduleauthor:: Alex Braun <ABraunCCS@gmail.com>
 '''
@@ -39,9 +39,9 @@ import re
 import copy
 import importlib
 
-from axon.core.dg import DG
-from axon.core.informer import SceneInformer
-from axon.core.node import Node
+from axon.client.core.dg import DG
+from axon.client.core.informer import SceneInformer
+from axon.client.core.node import Node
 # ------------------------------------------------------------------------------
 
 class Scene(DG):
@@ -83,22 +83,8 @@ class Scene(DG):
 				num += 1
 		return name + str(num)
 
-	def create_class(self, spec):
-		if spec['class'] in self.sources:
-			return self.sources[spec['class']]
-		else:
-			module = importlib.import_module(spec['module'], package=spec['path'])
-			class_ = getattr(module, spec['class'])
-			self.sources[spec['class']] = class_
-			return class_
-
 	def create_node(self, spec):
 		spec['name'] = self.create_node_name(spec['name'])
-
-		# INFORMER HOOK
-		message = 'create_node', spec['name']
-		self.informer.log('nodes', message)
-		# ----------------------------------------------------------------------	
 
 		for type_ in spec['packages'].values():
 			if type_:
@@ -129,20 +115,9 @@ class Scene(DG):
 		node.build(spec)
 
 	def connect_ports(self, out_port, in_port):	
-		# INFORMER HOOK
-		message = ('connect_ports', out_port.node.name,
-		out_port.name, in_port.node.name, in_port.name)
-		self.informer.log('nodes', message)
-		# ----------------------------------------------------------------------
-		
 		in_port.connect(out_port)
 
 	def disconnect_port(self, in_port):
-		# INFORMER HOOK
-		message = 'disconnect_port', in_port.node.name, in_port.name
-		self.informer.log('nodes', message)
-		# ----------------------------------------------------------------------
-
 		in_port.disconnect()
 # ------------------------------------------------------------------------------
 

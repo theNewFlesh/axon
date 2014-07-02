@@ -29,7 +29,7 @@
 .. module:: informer
 	:date: 06.30.2014
 	:platform: Unix
-	:synopsis: Python dependency graph Informer
+	:synopsis: Client dependency graph informer
 	
 .. moduleauthor:: Alex Braun <ABraunCCS@gmail.com>
 '''
@@ -39,7 +39,7 @@ from collections import *
 
 from axon.utilities.errors import *
 from axon.utilities.utils import is_iterable
-from axon.core.dg import Component
+from axon.client.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class Informer(Component):
@@ -85,38 +85,10 @@ class Informer(Component):
 	# --------------------------------------------------------------------------
 
 	def activate(self):
-		self._map['state'] = 'active'
+		self._spec['state'] = 'active'
 
 	def deactivate(self):
-		self._map['state'] = 'inactive'
-
-	def switch_state(self):
-		if self._map['state'] == 'active':
-			self._map['state'] = 'inactive'
-		else:
-			self._map['state'] = 'active'
-	# --------------------------------------------------------------------------
-
-	def log(self, name, message):
-		self.logs[name]['data'].append(message)
-		self.master_log['data'].append(message)
-
-		if self.state == 'active':
-			if self.logs[name]['state'] == 'active':
-				self.report(name)
-
-	def report(self, log):
-		last_line = self.logs[log]['data'][-1]
-		if type(last_line) is str:
-			print last_line
-		else:
-			# formatting is currently ad hoc
-			# may be reimplemented as an automatic system
-			fmt = '{:<18}  {:<35}'
-			new_last_line = list(last_line)[2:]
-			for line in new_last_line:
-				fmt += '  {:<15}'
-			print fmt.format(*last_line)
+		self._spec['state'] = 'inactive'
 # ------------------------------------------------------------------------------
 
 class NodeInformer(Informer):

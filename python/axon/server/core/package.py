@@ -38,7 +38,7 @@
 from collections import *
 
 from axon.utilities.errors import *
-from axon.core.dg import Component
+from axon.server.core.dg import Component
 # ------------------------------------------------------------------------------
 
 class Package(Component):
