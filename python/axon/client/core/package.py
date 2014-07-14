@@ -48,6 +48,10 @@ class Package(Component):
     # --------------------------------------------------------------------------
 
     @property
+    def type_(self):
+        return self._map['type']
+
+    @property
     def class_(self):
         return self._map['class']
 
