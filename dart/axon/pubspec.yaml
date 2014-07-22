@@ -1,0 +1,11 @@
+name: axon
+version: 0.1.0
+author: Alex Braun
+description: Client-side nodal framework for interfacing with server-side Axon nodal framework
+dependencies:
+  bwu_datagrid: any
+  polymer: '>=0.11.0 <0.12.0'
+  quiver: any
+transformers:
+- polymer:
+    entry_points: web/axon.html

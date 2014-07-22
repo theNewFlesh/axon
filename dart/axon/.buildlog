@@ -1,0 +1,110 @@
+---
+build.dart --machine --changed=pubspec.yaml --changed=web/axon.css --changed=web/axon.html --changed=web/clickc...
+
+build.dart finished [2235 ms]
+
+---
+build.dart --machine --changed=web/clickcounter.dart
+
+build.dart finished [1455 ms]
+
+---
+build.dart --machine --changed=pubspec.yaml
+
+build.dart finished [1722 ms]
+
+---
+build.dart --machine --changed=web/panel.dart
+
+build.dart finished [1723 ms]
+
+---
+build.dart --machine --changed=web/panel.dart
+
+build.dart finished [1736 ms]
+
+---
+build.dart --machine --changed=web/monolith.dart --removed=monolith.dart
+
+build.dart finished [1714 ms]
+
+---
+build.dart --machine --changed=client/core/monolith.dart --removed=web/monolith.dart
+
+build.dart finished [1810 ms]
+
+---
+build.dart --machine --changed=web/panel.dart
+
+build.dart finished [1749 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart --removed=web/panel.dart
+
+build.dart finished [1749 ms]
+
+---
+build.dart --machine --changed=client/core/monolith.dart
+
+build.dart finished [1737 ms]
+
+---
+build.dart --machine --changed=client/core/monolith.dart
+
+build.dart finished [1723 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1734 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1729 ms]
+
+---
+build.dart --machine --changed=client/core/monolith.dart
+
+build.dart finished [1726 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1760 ms]
+
+---
+build.dart --machine --changed=utilities/utils.dart
+
+build.dart finished [1756 ms]
+
+---
+build.dart --machine --changed=pubspec.yaml
+
+build.dart finished [1716 ms]
+
+---
+build.dart --machine --changed=utilities/utils.dart
+
+build.dart finished [1726 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1720 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1696 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1726 ms]
+
+---
+build.dart --machine --changed=client/gui/panel.dart
+
+build.dart finished [1712 ms]
+
